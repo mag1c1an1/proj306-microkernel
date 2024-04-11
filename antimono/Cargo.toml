@@ -1,0 +1,15 @@
+[package]
+name = "antimono"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.aster-frame]
+git = "https://github.com/asterinas/asterinas"
+rev = "d390365"
+
+[dependencies.ktest]
+git = "https://github.com/asterinas/asterinas"
+rev = "d390365"
+
+[workspace]
+exclude = ["target/osdk/base"]

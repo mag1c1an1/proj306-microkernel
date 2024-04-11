@@ -1,0 +1,16 @@
+
+[boot]
+ovmf = "/home/mag1cian/os-related/proj306-microkernel/OVMF"
+protocol = "multiboot"
+[qemu]
+machine = "q35"
+args = [
+    "--no-reboot",
+    "-m 2G",
+    "-nographic",
+    "-serial chardev:mux",
+    "-monitor chardev:mux",
+    "-chardev stdio,id=mux,mux=on,signal=off",
+    "-display none",
+    "-device isa-debug-exit,iobase=0xf4,iosize=0x04",
+]
