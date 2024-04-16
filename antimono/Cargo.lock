@@ -16,7 +16,13 @@ dependencies = [
 [[package]]
 name = "align_ext"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=d390365#d39036579b3e4abeea555deccca6fd72c5837e5f"
+
+[[package]]
+name = "am-object"
+version = "0.1.0"
+dependencies = [
+ "bitflags 2.5.0",
+]
 
 [[package]]
 name = "aml"
@@ -32,7 +38,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "antimono"
+name = "aster-antimono"
 version = "0.1.0"
 dependencies = [
  "aster-frame",
@@ -42,7 +48,6 @@ dependencies = [
 [[package]]
 name = "aster-frame"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=d390365#d39036579b3e4abeea555deccca6fd72c5837e5f"
 dependencies = [
  "acpi",
  "align_ext",
@@ -71,12 +76,12 @@ dependencies = [
  "volatile",
  "x86",
  "x86_64",
+ "xarray",
 ]
 
 [[package]]
 name = "aster-main"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=d390365#d39036579b3e4abeea555deccca6fd72c5837e5f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -235,7 +240,6 @@ dependencies = [
 [[package]]
 name = "int-to-c-enum"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=d390365#d39036579b3e4abeea555deccca6fd72c5837e5f"
 dependencies = [
  "int-to-c-enum-derive",
 ]
@@ -243,7 +247,6 @@ dependencies = [
 [[package]]
 name = "int-to-c-enum-derive"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=d390365#d39036579b3e4abeea555deccca6fd72c5837e5f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -262,7 +265,6 @@ dependencies = [
 [[package]]
 name = "ktest"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=d390365#d39036579b3e4abeea555deccca6fd72c5837e5f"
 dependencies = [
  "ktest-proc-macro",
  "owo-colors",
@@ -271,7 +273,6 @@ dependencies = [
 [[package]]
 name = "ktest-proc-macro"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=d390365#d39036579b3e4abeea555deccca6fd72c5837e5f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -297,7 +298,6 @@ checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
 [[package]]
 name = "linux-boot-params"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=d390365#d39036579b3e4abeea555deccca6fd72c5837e5f"
 
 [[package]]
 name = "lock_api"
@@ -472,6 +472,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
+name = "seL4-raw"
+version = "0.1.0"
+
+[[package]]
+name = "sel4"
+version = "0.1.0"
+
+[[package]]
+name = "smallvec"
+version = "1.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
+
+[[package]]
 name = "spin"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -620,4 +634,12 @@ dependencies = [
  "bitflags 2.5.0",
  "rustversion",
  "volatile",
+]
+
+[[package]]
+name = "xarray"
+version = "0.1.0"
+source = "git+https://github.com/asterinas/xarray?rev=72a4067#72a4067a65e8f94cfc193f5f19ebc981c1de9de7"
+dependencies = [
+ "smallvec",
 ]

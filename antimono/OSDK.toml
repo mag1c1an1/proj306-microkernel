@@ -1,6 +1,6 @@
 
 [boot]
-ovmf = "/home/mag1cian/os-related/proj306-microkernel/OVMF"
+ovmf = "../OVMF"
 protocol = "multiboot"
 [qemu]
 machine = "q35"
