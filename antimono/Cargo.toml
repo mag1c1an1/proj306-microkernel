@@ -11,5 +11,5 @@ path = "../asterinas/framework/libs/ktest"
 
 [workspace]
 resolver = "2"
-members = ["am-object","seL4-raw", "sel4"]
+members = ["am-object","sel4-raw", "sel4"]
 exclude = ["target/osdk/base"]
