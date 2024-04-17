@@ -1,10 +1,10 @@
 #![no_std]
 #![allow(clippy::upper_case_acronyms)]
 
-use bitfield::bitfield;
-use bitflags::bitflags;
-// use bitflags::bitflags;
-use core::fmt::Debug;
+pub mod object;
+pub mod structures;
+
+pub mod config;
 
 /// use c style to fork sel4
 struct ApicBaseMsr(u32);
@@ -34,7 +34,6 @@ struct Cr3(u32);
 struct EndPoint([u64; 2]);
 struct GdtTss([u64; 2]);
 struct IA32ArchCapabilitiesMsr(u32);
-pub struct MdbNode([u64; 2]);
 
 // bitflags! {
 //     /// MdbNodeNext conatins the next node in the list
@@ -47,54 +46,6 @@ pub struct MdbNode([u64; 2]);
 //         const _ = !0;
 //     }
 // }
-
-bitflags! {
-    #[derive(Debug)]
-    pub struct MdbFlags:u64 {
-        const FistBadged = 1;
-        const Revocable = 1 << 1;
-    }
-}
-
-bitfield! {
-    pub struct MdbNodeNext(u64);
-    impl Debug;
-    pub first_badged,set_first_badged: 0,0;
-    pub revocable,set_revocable: 1,1;
-    pub next,set_next: 63,2;
-}
-
-impl MdbNode {
-    /// TODO Refactor this
-    pub fn new(next: u64, revocable: u64, first_badged: u64, prev: u64) -> MdbNode {
-        let f = MdbFlags::from_bits_truncate(revocable);
-        todo!()
-    }
-    pub fn next(&self) -> MdbNode {
-        todo!()
-    }
-    pub fn set_next(&mut self) {
-        todo!()
-    }
-    pub fn prev(&self) -> MdbNode {
-        todo!()
-    }
-    pub fn set_prev(&mut self) {
-        todo!()
-    }
-    pub fn revocable(&self) -> MdbNodeNext {
-        todo!()
-    }
-    pub fn set_revocable(&mut self) {
-        todo!()
-    }
-    pub fn first_badged(&self) -> MdbNodeNext {
-        todo!()
-    }
-    pub fn set_first_badged(&mut self) {
-        todo!()
-    }
-}
 
 struct Notification([u64; 4]);
 struct Pml4e(u64);
@@ -113,44 +64,6 @@ struct AsidMap(u64);
 //     VSpace = 1,
 // }
 
-bitfield! {
-    pub struct CPtr(u64);
-    impl Debug;
-    pub tag,set_tag: 63,59;
-    pub ptr,set_ptr: 58,0;
-}
-
-bitfield! {
-    pub struct UntypedRights(u64);
-    impl Debug;
-    pub free_index, set_free_index: 63,17;
-    pub device, set_device: 7;
-    pub block_size,set_block_size: 2,0;
-}
-
-struct Cap([u64; 2]);
-enum CapTag {
-    Null = 0,
-    Untyped = 2,
-    Endpoint = 4,
-    Notification = 6,
-    Reply = 8,
-    Cnode = 10,
-    Thread = 12,
-    IrqControl = 14,
-    IrqHandler = 16,
-    Zombie = 18,
-    Domain = 20,
-    Frame = 1,
-    PageTable = 3,
-    PageDirectory = 5,
-    PDPT = 7,
-    PML4 = 9,
-    AsidControl = 11,
-    AsidPool = 13,
-    IOPort = 19,
-    IOPortControl = 31,
-}
 struct GdtEntry(u64);
 enum GdtEntryTag {
     Null,
@@ -169,12 +82,6 @@ struct PdPte(u64);
 struct seL4_Fault {}
 
 struct X86IrqState {}
-
-/// table entry
-pub struct CTE {
-    cap: Cap,
-    cte_mdb_node: MdbNode,
-}
 
 /* arch independent object types */
 #[repr(u64)]
@@ -222,7 +129,7 @@ enum ThreadExecState {
     IdleThreadState,
 }
 
-mod error {
+pub mod error {
     #[repr(u32)]
     pub enum Exception {
         None = 0,
@@ -232,28 +139,7 @@ mod error {
         Preempted,
     }
 
-    type Result<T, E = Exception> = core::result::Result<T, E>;
-}
-
-pub use error::*;
-
-/// C style
-impl CTE {
-    fn insert(new_cap: Cap, src_slot: *mut CTE, dest_slot: *mut CTE) {
-        todo!()
-    }
-
-    fn mov(new_cap: Cap, src_slot: *mut CTE, dest_slot: *mut CTE) {
-        todo!()
-    }
-    fn swap_for_delete() {}
-    fn swap() {}
-    fn revoke() {}
-    fn delete() {}
-}
-
-impl CTE {
-    fn empty_slot(&mut self) {}
+    pub type Result<T, E = Exception> = core::result::Result<T, E>;
 }
 
 struct DeriveCapRet {
@@ -264,133 +150,6 @@ struct DeriveCapRet {
 struct FinaliseCapRet {
     remainder: Cap,
     cleanup_info: Cap,
-}
-
-mod cnode {
-    use core::ptr;
-
-    use crate::{tcb::TCB, Cap, Exception, CTE};
-
-    fn decode_cnode_invocation() {}
-    // invokeCNodeRevoke函数的Rust版本
-    fn invoke_cnode_revoke(destSlot: &mut CTE) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // invokeCNodeDelete函数的Rust版本
-    fn invokeCNodeDelete(destSlot: &mut CTE) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // invokeCNodeCancelBadgedSends函数的Rust版本
-    fn invokeCNodeCancelBadgedSends(cap: Cap) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // invokeCNodeInsert函数的Rust版本
-    fn invokeCNodeInsert(cap: Cap, srcSlot: &mut CTE, destSlot: &mut CTE) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // invokeCNodeMove函数的Rust版本
-    fn invokeCNodeMove(cap: Cap, srcSlot: &mut CTE, destSlot: &mut CTE) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // invokeCNodeRotate函数的Rust版本
-    fn invokeCNodeRotate(
-        cap1: Cap,
-        cap2: Cap,
-        slot1: &mut CTE,
-        slot2: &mut CTE,
-        slot3: &mut CTE,
-    ) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // cteInsert函数的Rust版本
-    fn cteInsert(newCap: Cap, srcSlot: &mut CTE, destSlot: &mut CTE) {
-        // 函数实现
-    }
-
-    // cteMove函数的Rust版本
-    fn cteMove(newCap: Cap, srcSlot: &mut CTE, destSlot: &mut CTE) {
-        // 函数实现
-    }
-
-    // capSwapForDelete函数的Rust版本
-    fn capSwapForDelete(slot1: &mut CTE, slot2: &mut CTE) {
-        // 函数实现
-    }
-
-    // cteSwap函数的Rust版本
-    fn cteSwap(cap1: Cap, slot1: &mut CTE, cap2: Cap, slot2: &mut CTE) {
-        // 函数实现
-    }
-
-    // cteRevoke函数的Rust版本
-    fn cteRevoke(slot: &mut CTE) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // cteDelete函数的Rust版本
-    fn cteDelete(slot: &mut CTE, exposed: bool) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // cteDeleteOne函数的Rust版本
-    fn cteDeleteOne(slot: &mut CTE) {
-        // 函数实现
-    }
-
-    // insertNewCap函数的Rust版本
-    fn insertNewCap(parent: &mut CTE, slot: &mut CTE, cap: Cap) {
-        // 函数实现
-    }
-
-    // isMDBParentOf函数的Rust版本
-    fn isMDBParentOf(cte_a: &CTE, cte_b: &CTE) -> bool {
-        // 函数实现
-        false
-    }
-
-    // ensureNoChildren函数的Rust版本
-    fn ensureNoChildren(slot: &mut CTE) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // ensureEmptySlot函数的Rust版本
-    fn ensureEmptySlot(slot: &mut CTE) -> Exception {
-        // 函数实现
-        Exception::None
-    }
-
-    // isFinalCapability函数的Rust版本
-    fn isFinalCapability(cte: &CTE) -> bool {
-        // 函数实现
-        false
-    }
-
-    // slotCapLongRunningDelete函数的Rust版本
-    fn slotCapLongRunningDelete(slot: &CTE) -> bool {
-        // 函数实现
-        false
-    }
-
-    // getReceiveSlots函数的Rust版本
-    fn getReceiveSlots(thread: &TCB, buffer: &mut u64) -> *mut CTE {
-        // 函数实现
-        ptr::null_mut::<CTE>()
-    }
 }
 
 mod tcb {
