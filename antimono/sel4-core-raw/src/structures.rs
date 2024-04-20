@@ -1,14 +1,13 @@
-mod cap;
-pub use cap::*;
+pub(crate) mod cap;
 
 /// first u64 is prev
 /// second u64 last bit is recocable|first_badged
 /// double linked list
-#[derive(Debug, Copy, Clone,Default)]
+/// default is null node
+#[derive(Debug, Copy, Clone, Default)]
 pub struct MdbNode {
     words: [u64; 2],
 }
-
 
 /// rust style
 /// ignore sign extend

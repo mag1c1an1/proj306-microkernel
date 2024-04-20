@@ -1,0 +1,19 @@
+[package]
+name = "sel4-core-raw"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bitflags = "2.5.0"
+bitfield = "0.15.0"
+
+align_ext = { path = "../../asterinas/framework/libs/align_ext" }
+
+[dependencies.aster-frame]
+path = "../../asterinas/framework/aster-frame"
+
+[features]
+default = []
+mcs = []

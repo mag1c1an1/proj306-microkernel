@@ -43,6 +43,7 @@ version = "0.1.0"
 dependencies = [
  "aster-frame",
  "ktest",
+ "sel4-core-raw",
 ]
 
 [[package]]
@@ -495,9 +496,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "sel4-raw"
+name = "sel4-core-raw"
 version = "0.1.0"
 dependencies = [
+ "align_ext",
+ "aster-frame",
  "bitfield",
  "bitflags 2.5.0",
 ]

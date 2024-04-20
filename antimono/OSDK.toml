@@ -1,4 +1,3 @@
-
 [boot]
 ovmf = "../OVMF"
 protocol = "multiboot"

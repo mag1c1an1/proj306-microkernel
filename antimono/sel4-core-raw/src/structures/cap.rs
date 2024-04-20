@@ -1,6 +1,6 @@
 /// origin in strcuture_gen.h
 #[derive(Debug, Copy, Clone)]
-pub struct Cap {
+pub(crate) struct Cap {
     words: [u64; 2],
 }
 
@@ -76,6 +76,31 @@ impl Cap {
     pub fn type_equals(&self, cap_type_tag: u64) -> bool {
         self.typ() == cap_type_tag
     }
+
+    /* Returns whether or not this capability has memory associated
+     * with it or not. Referring to this as 'being physical' is to
+     * match up with the Haskell and abstract specifications */
+    pub fn is_physical(&self) -> bool {
+        todo!()
+    }
+
+    pub fn cap_ptr(&self) -> u64 {
+        // TODO
+        assert!(self.typ() == CapTag::Untyped.into());
+        self.words[0] & 0xffffffffffff
+    }
+
+    pub fn updat_data(&mut self, preserve: bool, new_data: u64) {
+        todo!()
+    }
+
+    pub fn is_same_regioin_as(&self, other: &Self) -> bool {
+        todo!()
+    }
+
+    pub fn is_same_object_as(&self, other: &Self) -> bool {
+        todo!()
+    }
 }
 
 // untyped
@@ -112,11 +137,21 @@ impl Cap {
         self.words[1] & 0x3f
     }
 
-    pub fn cap_ptr(&self) -> u64 {
-        assert!(self.typ() == CapTag::Untyped.into());
-        self.words[0] & 0xffffffffffff
+    pub fn size_bits(&self) -> u64 {
+        todo!()
     }
 }
+
+// derive_cap in rust should be Result<Cap>
+
+pub struct FinaliseCapRet {
+    pub remainder: Cap,
+    pub cleanup_info: Cap,
+}
+
+pub struct CapTransfer {}
+
+
 
 #[cfg(test)]
 /// TODO add tests
