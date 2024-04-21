@@ -27,6 +27,7 @@ use alloc::vec;
 #[aster_main]
 fn kernel_main() {
     println!("[antimono] finish init aster frame");
+    sel4_core_raw::init();
     // init other things
     let program_binary = include_bytes!("../rootserver/hello");
     let user_space = sel4_core_raw::create_user_space(program_binary);
