@@ -15,12 +15,13 @@ use aster_frame::vm::{Vaddr, VmAllocOptions, VmIo, VmMapOptions, VmPerm, VmSpace
 
 pub mod object;
 pub mod structures;
-
+pub mod prelude;
+pub mod types;
 pub mod config;
-
 pub mod machine;
 pub mod model;
 pub mod syscall;
+pub mod mem;
 
 pub mod error {
     #[repr(u32)]
@@ -127,6 +128,11 @@ pub fn try_boot_sys_node() {
     // init sys state  ndks
     // init syscall msrs (fast syscalls)
 }
+
+fn init_sys_state() {
+
+}
+
 
 pub const LOGO: &str = "
  █████╗ ███╗   ██╗████████╗██╗███╗   ███╗ ██████╗ ███╗   ██╗ ██████╗ 

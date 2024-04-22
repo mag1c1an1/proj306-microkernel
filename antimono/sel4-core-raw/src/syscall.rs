@@ -29,3 +29,6 @@ pub fn handle_syscall(user_context: &mut UserContext, user_space: &UserSpace) {
         _ => unimplemented!(),
     }
 }
+
+mod calls;
+mod syscall_ids;
