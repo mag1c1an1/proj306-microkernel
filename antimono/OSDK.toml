@@ -1,6 +1,6 @@
 [boot]
 ovmf = "../OVMF"
-protocol = "multiboot"
+protocol = "multiboot2"
 [qemu]
 machine = "q35"
 args = [

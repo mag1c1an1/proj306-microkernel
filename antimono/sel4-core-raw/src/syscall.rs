@@ -2,6 +2,7 @@ use alloc::vec;
 use aster_frame::{cpu::UserContext, task::Task, user::UserSpace, vm::VmIo};
 
 pub fn handle_syscall(user_context: &mut UserContext, user_space: &UserSpace) {
+    log::error!("in syscall");
     const SYS_WRITE: usize = 1;
     const SYS_EXIT: usize = 60;
 

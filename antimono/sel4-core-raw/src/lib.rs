@@ -22,6 +22,7 @@ pub mod machine;
 pub mod model;
 pub mod syscall;
 pub mod mem;
+pub mod root_server;
 
 pub mod error {
     #[repr(u32)]

@@ -1,9 +1,0 @@
-mod structures;
-mod objecttype;
-mod notification;
-mod cnode;
-mod cap;
-mod endpoint;
-mod interrupt;
-mod tcb;
-mod untyped;

@@ -9,6 +9,15 @@ fn is_cap_revocable(derived_cap: Cap, src_cap: Cap) -> bool {
 
 pub mod arch;
 
+type CPtrBits = u64;
+
+
+struct CPtr {
+    inner: CPtrBits,
+}
+
+
+
 // canbe method
 // deriveCap_ret_t deriveCap(cte_t *slot, cap_t cap);
 // finaliseCap_ret_t finaliseCap(cap_t cap, bool_t final, bool_t exposed);

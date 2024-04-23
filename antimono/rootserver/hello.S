@@ -1,27 +1,18 @@
 .global _start
 
 .section .text
+
 _start:
-    call    print_message
-    call    print_message
-    call    print_message
-    mov     $60, %rax               # syscall number of exit
-    mov     $0, %rdi                # exit code
-    syscall     
-get_pid: 
-    mov     $39, %rax
+    mov rax, 1        
+    mov rdi, 1        
+    mov rsi, msg      
+    mov rdx, msglen   
     syscall
-    ret
-print_message:
-    mov     $1, %rax                # syscall number of write
-    mov     $1, %rdi                # stdout
-    mov     $message, %rsi          # address of message         
-    mov     $message_end, %rdx
-    sub     %rsi, %rdx              # calculate message len
+
+    mov rax, 60       
+    mov rdi, 0        
     syscall
-    ret
-.section .rodata            
-message:
-    .ascii  "Hello, world\n"
-message_end:
+
+section .rodata
+    msg: db "Hello, world!", 10
 
