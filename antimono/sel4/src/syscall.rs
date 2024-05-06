@@ -19,7 +19,7 @@ pub fn handle_syscall(user_context: &mut UserContext, user_space: &UserSpace) {
                     .vm_space()
                     .read_bytes(buf_addr, &mut buf)
                     .unwrap();
-                  buf
+                buf
             };
             // Use the console for output safely.
             aster_frame::prelude::println!("{}", core::str::from_utf8(&buf).unwrap());
@@ -33,3 +33,10 @@ pub fn handle_syscall(user_context: &mut UserContext, user_space: &UserSpace) {
 
 mod calls;
 mod syscall_ids;
+mod invocation;
+
+#[no_mangle]
+pub fn slowpath(syscall_id: usize) {
+    todo!();
+}
+

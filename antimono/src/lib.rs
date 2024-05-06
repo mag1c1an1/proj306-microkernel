@@ -14,15 +14,15 @@ use aster_frame::task::Scheduler;
 #[aster_main]
 fn kernel_main() {
     println!("[antimono] finish init aster frame");
-    let x:Box<dyn Scheduler> = Box::new(Sched::new());
-    let s:&'static mut dyn Scheduler = Box::leak(x);
-    aster_frame::task::set_scheduler(s);
-    sel4_core_raw::init();
-    // init other things
-    let program_binary = include_bytes!("../rootserver/hello-bin");
-    let user_space = sel4_core_raw::create_user_space(program_binary);
-    let user_task = sel4_core_raw::create_user_task(Arc::new(user_space));
-    user_task.run();
+    // let x:Box<dyn Scheduler> = Box::new(Sched::new());
+    // let s:&'static mut dyn Scheduler = Box::leak(x);
+    // aster_frame::task::set_scheduler(s);
+    // sel4_core_raw::init();
+    // // init other things
+    // let program_binary = include_bytes!("../rootserver/hello-bin");
+    // let user_space = sel4_core_raw::create_user_space(program_binary);
+    // let user_task = sel4_core_raw::create_user_task(Arc::new(user_space));
+    // user_task.run();
 }
 
 struct Sched {

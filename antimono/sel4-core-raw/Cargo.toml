@@ -14,6 +14,5 @@ align_ext = { path = "../../asterinas/framework/libs/align_ext" }
 [dependencies.aster-frame]
 path = "../../asterinas/framework/aster-frame"
 
-[features]
-default = []
-mcs = []
+[dependencies.ktest]
+path = "../../asterinas/framework/libs/ktest"

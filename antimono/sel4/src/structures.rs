@@ -16,7 +16,7 @@ impl MdbNode {
     const MASK: u64 = 0xfffffffffffc;
     pub fn new(next: u64, revocable: u64, first_badged: u64, prev: u64) -> MdbNode {
         let word0 = prev;
-        let word1 = 0 | (next & Self::MASK) | (revocable & 0x1) << 1 | (first_badged & 0x1);
+        let word1 = (next & Self::MASK) | (revocable & 0x1) << 1 | (first_badged & 0x1);
         Self {
             words: [word0, word1],
         }

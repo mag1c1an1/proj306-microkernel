@@ -1,18 +1,18 @@
-.global _start
-
-.section .text
-
+.global _start                      # entry point
+.section .text                      # code section
 _start:
-    mov rax, 1        
-    mov rdi, 1        
-    mov rsi, msg      
-    mov rdx, msglen   
+    mov     $1, %rax                # syscall number of write
+    mov     $1, %rdi                # stdout
+    mov     $message, %rsi          # address of message         
+    mov     $message_end, %rdx
+    sub     %rsi, %rdx              # calculate message len
     syscall
+    mov     $60, %rax               # syscall number of exit, move it to rax
+    mov     $0, %rdi                # exit code, move it to rdi
+    syscall  
 
-    mov rax, 60       
-    mov rdi, 0        
-    syscall
-
-section .rodata
-    msg: db "Hello, world!", 10
+.section .rodata                    # read only data section
+message:
+    .ascii  "Hello, world\n"
+message_end:
 
