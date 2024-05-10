@@ -6,13 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bitflags = "2.5.0"
-bitfield = "0.15.0"
 log = "0.4"
-align_ext = { path = "../../asterinas/framework/libs/align_ext" }
+spin = "0.9"
+xmas-elf = "0.9"
+# align_ext = { path = "../../asterinas/framework/libs/align_ext" }
 
-[dependencies.aster-frame]
-path = "../../asterinas/framework/aster-frame"
+# [dependencies.aster-frame]
+# path = "../../asterinas/framework/aster-frame"
 
-[dependencies.ktest]
-path = "../../asterinas/framework/libs/ktest"
+# [dependencies.ktest]
+# path = "../../asterinas/framework/libs/ktest"
+
+[features]
+ENABLE_SMP = []
+ENABLE_UINTC = []

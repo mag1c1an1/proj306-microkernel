@@ -1,20 +1,22 @@
 [package]
-name = "aster-antimono"
+name = "antimono"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sel4-core-raw = { path = "./sel4-core-raw" }
+sel4 = { path = "./sel4" }
 log = "0.4"
-
 
 [dependencies.aster-frame]
 path = "../asterinas/framework/aster-frame"
 
-[dependencies.ktest]
-path = "../asterinas/framework/libs/ktest"
-
 [workspace]
 resolver = "2"
-members = ["am-object", "sel4-core-raw", "sel4", "csel4"]
+members = [
+  "crates/align-ext",
+  "crates/anti-frame",
+  "crates/anti-main",
+  # "sel4-core-raw",
+  # "sel4",
+]
 exclude = ["target/osdk/base"]
