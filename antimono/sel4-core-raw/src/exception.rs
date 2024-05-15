@@ -3,7 +3,6 @@ use crate::common::structures::exception_t;
 use crate::task_manager::{activateThread, get_currenct_thread, schedule};
 use crate::kernel::boot::current_fault;
 use crate::config::*;
-use crate::riscv::read_stval;
 use crate::syscall::handle_fault;
 
 #[no_mangle]
@@ -30,7 +29,7 @@ pub fn handleVMFaultEvent(vm_faultType: usize) -> exception_t {
 }
 
 pub fn handle_vm_fault(type_: usize) -> exception_t {
-    let addr = read_stval();
+    let addr = 0;
     match type_ {
         RISCVLoadPageFault | RISCVLoadAccessFault => {
             unsafe {

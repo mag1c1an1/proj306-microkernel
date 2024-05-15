@@ -100,7 +100,6 @@ pub fn findVSpaceForASID(_asid: asid_t) -> findVSpaceForASID_ret {
 #[inline]
 fn hwASIDFlush(asid: asid_t) {
     unsafe {
-        asm!("sfence.vma x0, {0}",in(reg) asid);
     }
 }
 

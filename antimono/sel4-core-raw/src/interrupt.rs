@@ -11,11 +11,10 @@ use crate::BIT;
 use crate::cspace::interface::cte_t;
 use crate::vspace::pptr_t;
 
-use crate::{config::*, riscv::read_sip};
+use crate::config::*;
 
 #[cfg(feature = "ENABLE_SMP")]
 use crate::deps::{ipi_clear_irq, ipi_get_irq};
-use crate::interrupt::plic::{RV_PLIC, PlicTrait};
 
 #[no_mangle]
 pub static mut intStateIRQTable: [usize; maxIRQ + 1] = [0; maxIRQ + 1];
@@ -94,14 +93,12 @@ pub fn deletedIRQHandler(irq: usize) {
 pub fn set_sie_mask(mask_high: usize) {
     unsafe {
         let _temp: usize;
-        asm!("csrrs {0},sie,{1}",out(reg)_temp,in(reg)mask_high);
     }
 }
 #[inline]
 pub fn clear_sie_mask(mask_low: usize) {
     unsafe {
         let _temp: usize;
-        asm!("csrrc {0},sie,{1}",out(reg)_temp,in(reg)mask_low);
     }
 }
 
@@ -114,12 +111,11 @@ pub fn mask_interrupt(disable: bool, irq: usize) {
             set_sie_mask(BIT!(SIE_STIE));
         }
     } else {
-        RV_PLIC::mask_irq(disable, irq);
     }
 }
 
 pub fn isIRQPending() -> bool {
-    let sip = read_sip();
+    let sip = 0;
     if (sip & (BIT!(SIP_STIP) | BIT!(SIP_SEIP))) != 0 {
         true
     } else {
@@ -160,7 +156,7 @@ pub fn getActiveIRQ() -> usize {
         return irq;
     }
 
-    let sip = read_sip();
+    let sip = 0;
     #[cfg(feature = "ENABLE_SMP")] {
         use crate::common::sbi::clear_ipi;
         if (sip & BIT!(SIP_SEIP)) != 0 {

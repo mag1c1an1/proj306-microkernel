@@ -11,7 +11,7 @@ use crate::cspace::interface::*;
 use log::debug;
 use crate::vspace::*;
 
-pub fn create_untypeds(root_cnode_cap: &cap_t, boot_mem_reuse_reg: region_t) -> bool {
+pub fn create_untypeds(root_cnode_cap: &cap_t) -> bool {
     unsafe {
         let first_untyped_slot = ndks_boot.slot_pos_cur;
         let mut start = 0;

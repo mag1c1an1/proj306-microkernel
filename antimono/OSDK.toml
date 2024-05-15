@@ -1,6 +1,10 @@
+initramfs = "images/capabilities-image-x86_64-pc99"
+
 [boot]
 ovmf = "../OVMF"
 protocol = "multiboot2"
+
+
 [qemu]
 machine = "q35"
 args = [

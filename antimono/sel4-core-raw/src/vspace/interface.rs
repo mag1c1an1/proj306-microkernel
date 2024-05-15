@@ -4,7 +4,7 @@ use core::intrinsics::unlikely;
 use super::pte::pte_t;
 use super::utils::{RISCV_GET_PT_INDEX, RISCV_GET_LVL_PGSIZE, RISCV_GET_LVL_PGSIZE_BITS, kpptr_to_paddr};
 
-use super::{satp::{setVSpaceRoot, sfence}, asid::{find_vspace_for_asid, asid_t}, utils::pptr_to_paddr, structures::{vptr_t, pptr_t}};
+use super::{asid::{find_vspace_for_asid, asid_t}, utils::pptr_to_paddr, structures::{vptr_t, pptr_t}};
 
 #[no_mangle]
 #[link_section = ".page_table"]
@@ -57,7 +57,7 @@ pub fn rust_map_kernel_window() {
 #[inline]
 pub fn activate_kernel_vspace() {
     unsafe {
-        setVSpaceRoot(kpptr_to_paddr(kernel_root_pageTable.as_ptr() as usize), 0);
+        // setVSpaceRoot(kpptr_to_paddr(kernel_root_pageTable.as_ptr() as usize), 0);
     }
 }
 
@@ -77,7 +77,7 @@ pub fn copyGlobalMappings(Lvl1pt: usize) {
 pub fn set_vm_root(vspace_root: &cap_t) -> Result<(), lookup_fault_t> {
     if vspace_root.get_cap_type() != CapTag::CapPageTableCap {
         unsafe {
-            setVSpaceRoot(kpptr_to_paddr(kernel_root_pageTable.as_ptr() as usize), 0);
+            // setVSpaceRoot(kpptr_to_paddr(kernel_root_pageTable.as_ptr() as usize), 0);
             return Ok(());
         }
     }
@@ -92,10 +92,10 @@ pub fn set_vm_root(vspace_root: &cap_t) -> Result<(), lookup_fault_t> {
             if let Some(lookup_fault) = find_ret.lookup_fault {
                 ret = Err(lookup_fault);
             }
-            setVSpaceRoot(kpptr_to_paddr(kernel_root_pageTable.as_ptr() as usize), 0);
+            // setVSpaceRoot(kpptr_to_paddr(kernel_root_pageTable.as_ptr() as usize), 0);
         }
     }
-    setVSpaceRoot(pptr_to_paddr(lvl1pt as *mut pte_t as usize), asid);
+    // setVSpaceRoot(pptr_to_paddr(lvl1pt as *mut pte_t as usize), asid);
     ret
 }
 
@@ -122,7 +122,6 @@ pub fn unmapPage(page_size: usize, asid: asid_t, vptr: vptr_t, pptr: pptr_t) -> 
     unsafe {
         let slot = lu_ret.ptSlot as *mut usize;
         *slot = 0;
-        sfence();
     }
     Ok(())
 }

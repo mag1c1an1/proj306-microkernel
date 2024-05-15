@@ -1,17 +1,31 @@
-use crate::common::structures::{exception_t, seL4_IPCBuffer};
 use crate::common::sel4_config::seL4_MsgMaxExtraCaps;
+use crate::common::structures::{exception_t, seL4_IPCBuffer};
+use crate::config::{CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS, MAX_NUM_FREEMEM_REG, MAX_NUM_RESV_REG};
 use crate::cspace::interface::{cap_t, cte_t};
 use crate::vspace::pptr_t;
-use crate::config::{
-    CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS,
-    MAX_NUM_FREEMEM_REG, MAX_NUM_RESV_REG,
-};
 
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct seL4_BootInfoHeader {
     pub id: usize,
     pub len: usize,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct seL4_X86_BootInfo_mmap_t {
+    pub header: seL4_BootInfoHeader,
+    pub mmap_length: u32,
+    pub mmap: [seL4_X86_mb_mmap_t; 50],
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct seL4_X86_mb_mmap_t {
+    pub size: u32,
+    pub base_addr: u64,
+    pub length: u64,
+    pub type_: u32,
 }
 
 #[derive(Copy, Clone)]
@@ -170,4 +184,3 @@ pub struct syscall_error_t {
 pub struct extra_caps_t {
     pub excaprefs: [pptr_t; seL4_MsgMaxExtraCaps],
 }
-

@@ -75,16 +75,16 @@ pub fn reset_untyped_cap(srcSlot: &mut cte_t) -> exception_t {
     }
     if device_mem != 0 || block_size < chunk {
         if device_mem == 0 {
-            clear_memory(region_base as *mut u8, block_size);
+            // clear_memory(region_base as *mut u8, block_size);
         }
         prev_cap.set_untyped_free_index(0);
     } else {
         let mut offset: isize = ROUND_DOWN!(offset - 1, chunk) as isize;
         while offset != -(BIT!(chunk) as isize) {
-            clear_memory(
-                GET_OFFSET_FREE_PTR(region_base, offset as usize) as *mut u8,
-                chunk,
-            );
+            // clear_memory(
+            //     GET_OFFSET_FREE_PTR(region_base, offset as usize) as *mut u8,
+            //     chunk,
+            // );
             // let status = preemptionPoint();
             // if status != exception_t::EXCEPTION_NONE {
             //     return status;

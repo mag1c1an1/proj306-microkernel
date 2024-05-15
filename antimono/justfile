@@ -1,0 +1,12 @@
+alias br := build_and_run
+
+
+build_and_run:
+  cargo osdk build
+  cargo osdk run
+
+asm-kernel:
+  rust-objdump -d target/x86_64-unknown-none/debug/antimono-osdk-bin > asm/kernel.asm
+
+asm-user:
+  objdump -d images/capabilities-image-x86_64-pc99 > asm/user.asm

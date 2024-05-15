@@ -249,7 +249,14 @@ unsafe fn root_server_mem_init(it_v_reg: v_region_t, extra_bi_size_bits: usize) 
          * Invariant: region (i + 1) is empty. */
         assert!(is_reg_empty(&ndks_boot.freemem[i + 1]));
 
+        /* Invariant: regions above (i + 1), if any, are empty or too small to use.
+         * Invariant: all non-empty regions are ordered, disjoint and unallocated. */
+
+        /* We make a fresh variable to index the known-empty region, because the
+         * SimplExportAndRefine verification test has poor support for array
+         * indices that are sums of variables and small constants. */
         let empty_index = i + 1;
+        /* Try to take the top-most suitably sized and aligned chunk. */
         let unaligned_start = ndks_boot.freemem[i].end - size;
         let start = ROUND_DOWN!(unaligned_start, max);
 
@@ -396,6 +403,7 @@ fn init_irqs(root_cnode_cap: &cap_t) {
     }
 }
 
+/// TODO refactor
 unsafe fn rust_create_it_address_space(root_cnode_cap: &cap_t, it_v_reg: v_region_t) -> cap_t {
     copyGlobalMappings(rootserver.vspace);
     let lvl1pt_cap = cap_t::new_page_table_cap(IT_ASID, rootserver.vspace, 1, rootserver.vspace);

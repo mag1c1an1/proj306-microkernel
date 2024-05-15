@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sel4 = { path = "./sel4" }
+sel4-core-raw = { path = "sel4-core-raw" }
 log = "0.4"
-
-[dependencies.aster-frame]
-path = "../asterinas/framework/aster-frame"
+anti-frame = { path = "crates/anti-frame" }
+# [dependencies.aster-frame]
+# path = "../asterinas/framework/aster-frame"
 
 [workspace]
 resolver = "2"
@@ -16,7 +16,9 @@ members = [
   "crates/align-ext",
   "crates/anti-frame",
   "crates/anti-main",
-  # "sel4-core-raw",
+  "crates/id-alloc",
+  "crates/int-to-c-enum",
+  "sel4-core-raw",
   # "sel4",
 ]
 exclude = ["target/osdk/base"]

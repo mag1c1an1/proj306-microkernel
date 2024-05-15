@@ -2,7 +2,7 @@ use crate::{common::{structures::exception_t, utils::{convert_to_mut_type_ref, p
 use crate::common::utils::MAX_FREE_INDEX;
 use crate::cspace::interface::{cap_t, cte_t, seL4_CapRights_t, cte_insert};
 use crate::task_manager::{get_currenct_thread, msgInfoRegister, set_thread_state, ThreadState};
-use crate::vspace::{pte_t, sfence, pptr_to_paddr, unmapPage, vm_attributes_t, maskVMRights, pptr_t, set_asid_pool_by_index, asid_pool_t, copyGlobalMappings};
+use crate::vspace::{pte_t, pptr_to_paddr, unmapPage, vm_attributes_t, maskVMRights, pptr_t, set_asid_pool_by_index, asid_pool_t, copyGlobalMappings};
 
 use crate::{utils::clear_memory, config::badgeRegister, kernel::boot::current_lookup_fault};
 
@@ -34,7 +34,6 @@ pub fn invoke_page_table_map(pt_cap: &mut cap_t, pt_slot: &mut pte_t, asid: usiz
     pt_cap.set_pt_mapped_asid(asid);
     pt_cap.set_pt_mapped_address(vaddr);
     *pt_slot = pte;
-    sfence();
     exception_t::EXCEPTION_NONE
 }
 

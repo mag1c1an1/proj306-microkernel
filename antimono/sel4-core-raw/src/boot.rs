@@ -5,7 +5,7 @@ mod root_server;
 mod untyped;
 mod utils;
 
-use core::mem::size_of;
+use core::mem::{self, size_of};
 
 use crate::common::sel4_config::{
     seL4_PageBits, CONFIG_MAX_NUM_NODES, KERNEL_ELF_BASE, PADDR_TOP, PAGE_BITS,
@@ -20,10 +20,9 @@ use crate::boot::root_server::root_server_init;
 use crate::boot::untyped::create_untypeds;
 use crate::boot::utils::paddr_to_pptr_reg;
 use crate::config::*;
-use crate::interrupt::{init_hart, init_irq_controller, set_sie_mask};
 use crate::structures::{
     ndks_boot_t, p_region_t, region_t, seL4_BootInfo, seL4_BootInfoHeader, seL4_SlotRegion,
-    v_region_t,
+    seL4_X86_BootInfo_mmap_t, v_region_t,
 };
 
 use crate::task_manager::*;
@@ -39,6 +38,8 @@ use crate::{
 #[cfg(feature = "ENABLE_SMP")]
 use core::arch::asm;
 
+use self::mm::init_freemem;
+
 pub static ksNumCPUs: Mutex<usize> = Mutex::new(0);
 pub static node_boot_lock: Mutex<usize> = Mutex::new(0);
 
@@ -53,18 +54,6 @@ pub static mut ndks_boot: ndks_boot_t = ndks_boot_t {
     bi_frame: 0 as *mut seL4_BootInfo,
     slot_pos_cur: seL4_NumInitialCaps,
 };
-
-pub fn init_sys() {
-    try_init_kernel(
-        ui_p_reg_start,
-        ui_p_reg_end,
-        pv_offset,
-        v_entry,
-        dtb_phys_addr,
-        dtb_size,
-        ki_boot_end,
-    )
-}
 
 fn init_cpu() {
     #[cfg(feature = "ENABLE_UINTC")]
@@ -182,109 +171,72 @@ fn init_core_state(scheduler_action: *mut tcb_t) {
     }
 }
 
-pub fn try_init_kernel(
-    ui_p_reg_start: usize,
-    ui_p_reg_end: usize,
-    pv_offset: isize,
-    v_entry: usize,
-    dtb_phys_addr: usize,
-    dtb_size: usize,
-    ki_boot_end: usize,
-) -> bool {
-    debug!("hello logging");
-    // TODO add user image
-    // let ipcbuf_vptr = ui_v_reg.end;
-    // let bi_frame_vptr = ipcbuf_vptr + BIT!(PAGE_BITS);
-    // let extra_bi_frame_vptr = bi_frame_vptr + BIT!(BI_FRAME_SIZE_BITS);
-    init_cpu();
+pub fn try_init_kernel(ui_v_reg: v_region_t, pv_offset: isize, v_entry: usize) {
+    // phy mem to kernel addr
 
+    let mut extra_bi_size = mem::size_of::<seL4_BootInfoHeader>();
+    let ipcbuf_vptr = ui_v_reg.end;
+    let bi_frame_vptr = ipcbuf_vptr + BIT!(PAGE_BITS);
+    let extra_bi_frame_vptr = bi_frame_vptr + BIT!(BI_FRAME_SIZE_BITS);
 
-    // let extra_bi_size_bits = calculate_extra_bi_size_bits(extra_bi_size);
+    extra_bi_size += mem::size_of::<seL4_X86_BootInfo_mmap_t>();
+    extra_bi_size += mem::size_of::<seL4_BootInfoHeader>() + 4;
+    // rust_map_kernel_window();
+    // init_cpu();
+    // init_irq_controller();
+    // init_hart();
 
-    // let it_v_reg = v_region_t {
-    //     start: ui_v_reg.start,
-    //     end: extra_bi_frame_vptr + BIT!(extra_bi_size_bits),
-    // };
+    let extra_bi_size_bits = calculate_extra_bi_size_bits(extra_bi_size);
 
-    if it_v_reg.end >= USER_TOP {
-        debug!(
-            "ERROR: userland image virt [{}..{}]
-        exceeds USER_TOP ({})\n",
-            it_v_reg.start, it_v_reg.end, USER_TOP
-        );
-        return false;
-    }
-    if !init_freemem(ui_reg.clone(), dtb_p_reg.unwrap().clone()) {
-        debug!("ERROR: free memory management initialization failed\n");
-        return false;
-    }
+    // the region of the initial thread in the user image  + ipcbuf and boot info
+    let it_v_reg = v_region_t {
+        start: ui_v_reg.start,
+        end: ROUND_UP!(extra_bi_frame_vptr + BIT!(extra_bi_size_bits), PAGE_BITS),
+    };
 
-    if let Some((initial_thread, root_cnode_cap)) = root_server_init(
-        it_v_reg,
-        extra_bi_size_bits,
-        ipcbuf_vptr,
-        bi_frame_vptr,
-        extra_bi_size,
-        extra_bi_frame_vptr,
-        ui_reg,
-        pv_offset,
-        v_entry,
-    ) {
-        create_idle_thread();
-        init_core_state(initial_thread);
-        if !create_untypeds(&root_cnode_cap, boot_mem_reuse_reg) {
-            debug!("ERROR: could not create untypteds for kernel image boot memory");
-        }
-        unsafe {
-            (*ndks_boot.bi_frame).sharedFrames = seL4_SlotRegion { start: 0, end: 0 };
+    assert!(
+        it_v_reg.end < USER_TOP,
+        "Userland image virt [{}..{}] execeeds USER_TOP ({})",
+        it_v_reg.start,
+        it_v_reg.end,
+        USER_TOP
+    );
 
-            bi_finalise(dtb_size, dtb_phys_addr, extra_bi_size);
-        }
-        // debug!("release_secondary_cores start");
-        *ksNumCPUs.lock() = 1;
-        #[cfg(feature = "ENABLE_SMP")]
-        {
-            unsafe {
-                clh_lock_init();
-                release_secondary_cores();
-                clh_lock_acquire(cpu_id(), false);
-            }
-        }
+    // if let Some((initial_thread, root_cnode_cap)) = root_server_init(
+    //     it_v_reg,
+    //     extra_bi_size_bits,
+    //     ipcbuf_vptr,
+    //     bi_frame_vptr,
+    //     extra_bi_size,
+    //     extra_bi_frame_vptr,
+    //     ui_reg,
+    //     pv_offset,
+    //     v_entry,
+    // ) {
+    //     create_idle_thread();
+    //     init_core_state(initial_thread);
+    //     if !create_untypeds(&root_cnode_cap) {
+    //         debug!("ERROR: could not create untypteds for kernel image boot memory");
+    //     }
+    //     unsafe {
+    //         (*ndks_boot.bi_frame).sharedFrames = seL4_SlotRegion { start: 0, end: 0 };
 
-        debug!("Booting all finished, dropped to user space");
-        debug!("\n");
-    } else {
-        return false;
-    }
+    //         bi_finalise(0, 0, extra_bi_size);
+    //     }
+    //     // debug!("release_secondary_cores start");
+    //     *ksNumCPUs.lock() = 1;
+    //     #[cfg(feature = "ENABLE_SMP")]
+    //     {
+    //         unsafe {
+    //             clh_lock_init();
+    //             release_secondary_cores();
+    //             clh_lock_acquire(cpu_id(), false);
+    //         }
+    //     }
 
-    true
-}
-
-#[cfg(feature = "ENABLE_SMP")]
-pub fn try_init_kernel_secondary_core(_hart_id: usize, _core_id: usize) -> bool {
-    use core::ops::AddAssign;
-    while node_boot_lock.lock().eq(&0) {}
-    // debug!("start try_init_kernel_secondary_core");
-    init_cpu();
-    init_hart();
-    debug!("init cpu compl");
-    unsafe { clh_lock_acquire(cpu_id(), false) }
-    ksNumCPUs.lock().add_assign(1);
-    init_core_state(SchedulerAction_ResumeCurrentThread as *mut tcb_t);
-    debug!("init_core_state compl");
-
-    unsafe {
-        asm!("fence.i");
-    }
-    true
-}
-
-#[cfg(feature = "ENABLE_SMP")]
-fn release_secondary_cores() {
-    use crate::common::sel4_config::CONFIG_MAX_NUM_NODES;
-    *node_boot_lock.lock() = 1;
-    unsafe {
-        asm!("fence rw, rw");
-    }
-    while ksNumCPUs.lock().ne(&CONFIG_MAX_NUM_NODES) {}
+    //     debug!("Booting all finished, dropped to user space");
+    //     debug!("\n");
+    // } else {
+    //     return false;
+    // }
 }

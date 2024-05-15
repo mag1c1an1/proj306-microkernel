@@ -12,9 +12,10 @@ pub fn aster_main(_attr: TokenStream, item: TokenStream) -> TokenStream {
     quote!(
         #[no_mangle]
         pub fn __aster_main() -> ! {
-            aster_frame::init();
+            anti_frame::init();
             #main_fn_name();
-            aster_frame::prelude::abort();
+            // aster_frame::prelude::abort();
+            loop{}
         }
 
         #main_fn

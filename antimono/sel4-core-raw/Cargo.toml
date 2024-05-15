@@ -9,13 +9,9 @@ edition = "2021"
 log = "0.4"
 spin = "0.9"
 xmas-elf = "0.9"
-# align_ext = { path = "../../asterinas/framework/libs/align_ext" }
+anti-frame = {path = "../crates/anti-frame"}
+align-ext = { path = "../crates/align-ext" }
 
-# [dependencies.aster-frame]
-# path = "../../asterinas/framework/aster-frame"
-
-# [dependencies.ktest]
-# path = "../../asterinas/framework/libs/ktest"
 
 [features]
 ENABLE_SMP = []

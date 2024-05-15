@@ -2,7 +2,7 @@
 // #![forbid(unsafe_code)]
 
 // extern crate alloc;
-// use aster_frame::prelude::*;
+use anti_frame::prelude::*;
 // use aster_frame::sync::Mutex;
 
 // use alloc::boxed::Box;
@@ -11,20 +11,19 @@
 // use alloc::vec::{self, Vec};
 // use aster_frame::task::Scheduler;
 
-pub fn x() {}
-// #[aster_main]
-// fn kernel_main() {
-//     println!("[antimono] finish init aster frame");
-//     let x:Box<dyn Scheduler> = Box::new(Sched::new());
-//     let s:&'static mut dyn Scheduler = Box::leak(x);
-//     aster_frame::task::set_scheduler(s);
-//     sel4::init();
-//     // init other things
-//     let program_binary = include_bytes!("../rootserver/hello-bin");
-//     let user_space = sel4::create_user_space(program_binary);
-//     let user_task = sel4::create_user_task(Arc::new(user_space));
-//     user_task.run();
-// }
+#[aster_main]
+fn kernel_main() {
+    // println!("[antimono] finish init aster frame");
+    // let x:Box<dyn Scheduler> = Box::new(Sched::new());
+    // let s:&'static mut dyn Scheduler = Box::leak(x);
+    // aster_frame::task::set_scheduler(s);
+    sel4_core_raw::init();
+    // // init other things
+    // let program_binary = include_bytes!("../rootserver/hello-bin");
+    // let user_space = sel4::create_user_space(program_binary);
+    // let user_task = sel4::create_user_task(Arc::new(user_space));
+    // user_task.run();
+}
 
 // struct Sched {
 //     queue: Mutex<VecDeque<Arc<aster_frame::task::Task>>>,

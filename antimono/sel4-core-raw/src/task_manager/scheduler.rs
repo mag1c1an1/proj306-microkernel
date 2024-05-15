@@ -540,7 +540,7 @@ pub fn create_idle_thread() {
 fn idle_thread() {
     unsafe {
         loop {
-            cpu_idle[cpu_id()] = true;
+            cpu_idle[0] = true;
             asm!("wfi");
         }
     }

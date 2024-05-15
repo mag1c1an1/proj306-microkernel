@@ -2,7 +2,7 @@ use core::intrinsics::unlikely;
 
 use crate::{common::{utils::{convert_to_mut_type_ref, convert_to_type_ref}, structures::exception_t, sel4_config::*}, MASK};
 
-use super::{structures::vptr_t, satp::sfence};
+use super::structures::vptr_t;
 use super::utils::{paddr_to_pptr, RISCV_GET_PT_INDEX};
 use super::asid::{asid_t, find_vspace_for_asid};
 use super::vm_rights::{RISCVGetWriteFromVMRights, RISCVGetReadFromVMRights};
@@ -82,7 +82,6 @@ impl pte_t {
     #[inline]
     pub fn update(&mut self, pte: Self) {
         *self = pte;
-        sfence();
     }
 
     pub fn unmap_page_table(&mut self, asid: asid_t, vptr: vptr_t) {
@@ -108,7 +107,6 @@ impl pte_t {
             return;
         }
         *ptSlot = pte_t::new(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        sfence();
     }
 
     #[inline]

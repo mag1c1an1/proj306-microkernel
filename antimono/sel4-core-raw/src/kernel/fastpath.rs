@@ -8,7 +8,6 @@ use log::debug;
 use crate::common::{sel4_config::*, message_info::*, fault::*, utils::{convert_to_mut_type_ref, convert_to_option_mut_type_ref}};
 use crate::cspace::interface::*;
 use crate::MASK;
-use crate::riscv::read_time;
 
 #[inline]
 #[no_mangle]
