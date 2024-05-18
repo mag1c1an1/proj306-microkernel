@@ -1,4 +1,4 @@
-initramfs = "images/capabilities-image-x86_64-pc99"
+initramfs = "images/root_task"
 
 [boot]
 ovmf = "../OVMF"

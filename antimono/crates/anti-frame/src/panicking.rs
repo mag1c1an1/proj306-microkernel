@@ -41,8 +41,8 @@ pub fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     // // then print the information and abort.
     error!("Uncaught panic!");
     early_println!("{}", info);
-    early_println!("printing stack trace:");
-    print_stack_trace();
+    // early_println!("printing stack trace:");
+    // print_stack_trace();
     abort();
 }
 

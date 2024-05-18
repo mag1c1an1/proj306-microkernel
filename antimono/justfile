@@ -1,12 +1,22 @@
-alias br := build_and_run
+sel4_build_path := "../../seL4-stuff/sel4-tutorials-manifest/hello-world_build"
+obj-name := "hello-world-image-x86_64-pc99"
 
-
-build_and_run:
-  cargo osdk build
+run: 
   cargo osdk run
+
+build: 
+  cargo osdk build
 
 asm-kernel:
   rust-objdump -d target/x86_64-unknown-none/debug/antimono-osdk-bin > asm/kernel.asm
 
 asm-user:
   objdump -d images/capabilities-image-x86_64-pc99 > asm/user.asm
+
+debug: 
+  cargo osdk run --enable-gdb --gdb-server-addr 127.0.0.1:1234
+
+copy-image:
+  cd {{sel4_build_path}} && ninja
+  cp {{sel4_build_path}}/images/{{obj-name}} images/root_task
+  

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sel4-core-raw = { path = "sel4-core-raw" }
+ember = { path = "ember" }
 log = "0.4"
 anti-frame = { path = "crates/anti-frame" }
 # [dependencies.aster-frame]
@@ -18,7 +18,7 @@ members = [
   "crates/anti-main",
   "crates/id-alloc",
   "crates/int-to-c-enum",
-  "sel4-core-raw",
+  "ember",
   # "sel4",
 ]
 exclude = ["target/osdk/base"]

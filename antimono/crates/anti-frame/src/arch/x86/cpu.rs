@@ -17,7 +17,7 @@ use log::debug;
 #[cfg(feature = "intel_tdx")]
 use tdx_guest::tdcall;
 use trapframe::{GeneralRegs, UserContext as RawUserContext};
-use x86_64::registers::rflags::RFlags;
+use x86_64::{registers::{rflags::RFlags, segmentation::Segment64}, VirtAddr};
 
 #[cfg(feature = "intel_tdx")]
 use crate::arch::tdx_guest::{handle_virtual_exception, TdxTrapFrame};
@@ -642,4 +642,9 @@ impl Default for FpRegs {
 #[derive(Debug, Clone, Copy)]
 struct FxsaveArea {
     data: [u8; 512], // 512 bytes
+}
+
+/// who knows what will happen
+pub fn set_tls(tls_base: u64) {
+    unsafe { x86_64::registers::segmentation::FS::write_base(VirtAddr::new(tls_base)) };
 }

@@ -81,8 +81,8 @@ name = "antimono"
 version = "0.1.0"
 dependencies = [
  "anti-frame",
+ "ember",
  "log",
- "sel4-core-raw",
 ]
 
 [[package]]
@@ -186,6 +186,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "ember"
+version = "0.1.0"
+dependencies = [
+ "align-ext",
+ "anti-frame",
+ "int-to-c-enum",
+ "intrusive-collections",
+ "lazy_static",
+ "log",
+ "spin 0.9.8",
+ "xmas-elf",
 ]
 
 [[package]]
@@ -483,17 +497,6 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
-
-[[package]]
-name = "sel4-core-raw"
-version = "0.1.0"
-dependencies = [
- "align-ext",
- "anti-frame",
- "log",
- "spin 0.9.8",
- "xmas-elf",
-]
 
 [[package]]
 name = "smallvec"

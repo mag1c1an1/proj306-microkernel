@@ -5,8 +5,8 @@
             "name": "Debug Asterinas(debug)",
             "type": "lldb",
             "request": "custom",
-            "targetCreateCommands": ["target create ${workspaceFolder}/antimono/target/x86_64-unknown-none/debug/aster-antimono-osdk-bin"],
-            "processCreateCommands": ["gdb-remote 1234"]
+            "targetCreateCommands": ["target create ${workspaceFolder}/antimono/target/x86_64-unknown-none/debug/antimono-osdk-bin"],
+            "processCreateCommands": ["gdb-remote 127.0.0.1:1234"]
         }
     ]
 }
