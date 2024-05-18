@@ -6,7 +6,6 @@ use crate::{
     BIT,
 };
 
-
 pub mod page_fault_handler;
 pub mod perms;
 pub mod vmar;

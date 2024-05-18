@@ -14,3 +14,9 @@ align-ext = { path = "../crates/align-ext" }
 int-to-c-enum = { path = "../crates/int-to-c-enum" }
 intrusive-collections = "0.9"
 lazy_static = { version = "1.0", features = ["spin_no_std"] }
+anti-rights = { path = "../crates/anti-rights" }
+anti-rights-proc = { path = "../crates/anti-rights-proc" }
+typeflags = { path = "../crates/typeflags" }
+typeflags-util = { path = "../crates/typeflags-util" }
+
+bitflags = "1.3"

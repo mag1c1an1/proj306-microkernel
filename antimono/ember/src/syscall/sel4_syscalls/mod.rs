@@ -1,7 +1,7 @@
 use anti_frame::cpu::{set_tls, UserContext};
 
 use super::SyscallReturn;
-use crate::{error::Result, log_syscall_entry, sel4::SeL4Regs, syscall::SEL4_SET_TLS_BASE};
+use crate::{log_syscall_entry, sel4::SeL4Regs, syscall::SEL4_SET_TLS_BASE, Result};
 
 pub fn sel4_set_tls_base(user_context: &mut UserContext) -> Result<SyscallReturn> {
     log_syscall_entry!(SEL4_SET_TLS_BASE);

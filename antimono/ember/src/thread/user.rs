@@ -31,6 +31,8 @@ pub fn create_root_task_space() -> UserSpace {
         vm_space.map(user_pages, &options).unwrap();
         vm_space
     };
+    let opt = user_address_space.query(0x521090).unwrap();
+    trace!(" ans is {:?}", opt);
     let elf = Elf::parse_elf(program).unwrap();
     // let x = user_address_space.query(0x410600).unwrap();
     // trace!("{:?}", x);

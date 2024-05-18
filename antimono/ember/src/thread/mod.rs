@@ -13,6 +13,7 @@ pub mod status;
 pub mod task;
 pub mod thread_table;
 pub mod user;
+pub mod exception;
 
 pub type Tid = u32;
 

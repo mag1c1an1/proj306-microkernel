@@ -16,8 +16,12 @@ members = [
   "crates/align-ext",
   "crates/anti-frame",
   "crates/anti-main",
+  "crates/anti-rights",
+  "crates/anti-rights-proc",
   "crates/id-alloc",
   "crates/int-to-c-enum",
+  "crates/typeflags",
+  "crates/typeflags-util",
   "ember",
   # "sel4",
 ]

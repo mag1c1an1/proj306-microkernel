@@ -7,7 +7,7 @@ use anti_frame::{
 
 use crate::{current_thread, syscall::handle_syscall};
 
-use super::Thread;
+use super::{exception::handle_exception, Thread};
 
 pub fn create_new_user_task(user_space: Arc<UserSpace>) -> Arc<Task> {
     fn user_task_entry() {
@@ -55,7 +55,7 @@ pub fn create_new_user_task(user_space: Arc<UserSpace>) -> Arc<Task> {
         }
         // debug!("exit user loop");
         // FIXME: This is a work around: exit in kernel task entry may be not called. Why this will happen?
-        current_task.exit();
+        // current_task.exit();
     }
 
     TaskOptions::new(user_task_entry)
@@ -69,6 +69,6 @@ pub fn create_new_user_task(user_space: Arc<UserSpace>) -> Arc<Task> {
 fn handle_user_event(user_event: UserEvent, context: &mut UserContext) {
     match user_event {
         UserEvent::Syscall => handle_syscall(context),
-        UserEvent::Exception => todo!(),
+        UserEvent::Exception => handle_exception(context),
     }
 }

@@ -77,6 +77,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "anti-rights"
+version = "0.1.0"
+dependencies = [
+ "anti-rights-proc",
+ "bitflags 1.3.2",
+ "typeflags",
+ "typeflags-util",
+]
+
+[[package]]
+name = "anti-rights-proc"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "antimono"
 version = "0.1.0"
 dependencies = [
@@ -189,16 +208,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "either"
+version = "1.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3dca9240753cf90908d7e4aac30f630662b02aebaa1b58a3cadabdb23385b58b"
+
+[[package]]
 name = "ember"
 version = "0.1.0"
 dependencies = [
  "align-ext",
  "anti-frame",
+ "anti-rights",
+ "anti-rights-proc",
+ "bitflags 1.3.2",
  "int-to-c-enum",
  "intrusive-collections",
  "lazy_static",
  "log",
  "spin 0.9.8",
+ "typeflags",
+ "typeflags-util",
  "xmas-elf",
 ]
 
@@ -287,6 +317,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f4f90afb01281fdeffb0f8e082d230cbe4f888f837cc90759696b858db1a700"
 dependencies = [
  "memoffset",
+]
+
+[[package]]
+name = "itertools"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+dependencies = [
+ "either",
 ]
 
 [[package]]
@@ -591,6 +630,21 @@ dependencies = [
  "raw-cpuid",
  "x86_64",
 ]
+
+[[package]]
+name = "typeflags"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+ "typeflags-util",
+]
+
+[[package]]
+name = "typeflags-util"
+version = "0.1.0"
 
 [[package]]
 name = "uefi-raw"

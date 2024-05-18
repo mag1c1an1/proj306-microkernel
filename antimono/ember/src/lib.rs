@@ -10,6 +10,13 @@
 #![feature(alloc_error_handler)]
 #![feature(panic_info_message)]
 #![feature(linkage)]
+#![feature(let_chains)]
+#![feature(btree_cursors)]
+// FIXME: This feature is used to support vm capbility now as a work around.
+// Since this is an incomplete feature, use this feature is unsafe.
+// We should find a proper method to replace this feature with min_specialization, which is a sound feature.
+#![feature(specialization)]
+#![feature(const_option)]
 // #![feature(generic_const_exprs)]
 
 // use align_ext::AlignExt;
@@ -31,6 +38,7 @@ use anti_frame::{
     user::{UserEvent, UserMode, UserSpace},
     vm::{PageFlags, Vaddr, VmAllocOptions, VmIo, VmMapOptions, VmSpace, PAGE_SIZE},
 };
+use error::Error;
 use sel4::create_frames_of_region_ret_t;
 use thread::{task::create_new_user_task, user::create_root_task_space, Thread};
 
@@ -49,6 +57,7 @@ pub(crate) mod sel4;
 // // mod debug;
 // // mod deps;
 pub mod error;
+
 // mod exception;
 // mod interrupt;
 // mod kernel;
@@ -69,6 +78,7 @@ pub mod sched;
 pub mod thread;
 pub mod vm;
 
+pub(crate) type Result<T, E = Error> = core::result::Result<T, E>;
 // struct ui_info_t {
 //     /// region where the user image lies in
 //     pub p_reg: p_region_t,

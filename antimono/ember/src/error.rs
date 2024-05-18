@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
 
-pub(crate) type Result<T> = core::result::Result<T, Error>;
 /// Error number.
 #[repr(i32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -181,19 +180,56 @@ impl From<Errno> for Error {
     }
 }
 
-#[macro_export]
-macro_rules! return_errno {
-    ($errno: expr) => {
-        return Err($crate::error::Error::new($errno))
-    };
+impl AsRef<Error> for Error {
+    fn as_ref(&self) -> &Error {
+        self
+    }
 }
 
-#[macro_export]
-macro_rules! return_errno_with_message {
-    ($errno: expr, $message: expr) => {
-        return Err($crate::error::Error::with_message($errno, $message))
-    };
+impl From<anti_frame::Error> for Error {
+    fn from(frame_error: anti_frame::Error) -> Self {
+        match frame_error {
+            anti_frame::Error::AccessDenied => Error::new(Errno::EFAULT),
+            anti_frame::Error::NoMemory => Error::new(Errno::ENOMEM),
+            anti_frame::Error::InvalidArgs => Error::new(Errno::EINVAL),
+            anti_frame::Error::IoError => Error::new(Errno::EIO),
+            anti_frame::Error::NotEnoughResources => Error::new(Errno::EBUSY),
+            anti_frame::Error::PageFault => Error::new(Errno::EFAULT),
+            anti_frame::Error::Overflow => Error::new(Errno::EOVERFLOW),
+            anti_frame::Error::MapAlreadyMappedVaddr => Error::new(Errno::EINVAL),
+        }
+    }
 }
+
+// impl From<aster_block::bio::BioEnqueueError> for Error {
+//     fn from(error: aster_block::bio::BioEnqueueError) -> Self {
+//         match error {
+//             aster_block::bio::BioEnqueueError::IsFull => {
+//                 Error::with_message(Errno::EBUSY, "The request queue is full")
+//             }
+//             aster_block::bio::BioEnqueueError::Refused => {
+//                 Error::with_message(Errno::EBUSY, "Refuse to enqueue the bio")
+//             }
+//         }
+//     }
+// }
+
+// impl From<aster_block::bio::BioStatus> for Error {
+//     fn from(err_status: aster_block::bio::BioStatus) -> Self {
+//         match err_status {
+//             aster_block::bio::BioStatus::NotSupported => {
+//                 Error::with_message(Errno::EIO, "I/O operation is not supported")
+//             }
+//             aster_block::bio::BioStatus::NoSpace => {
+//                 Error::with_message(Errno::ENOSPC, "Insufficient space on device")
+//             }
+//             aster_block::bio::BioStatus::IoError => {
+//                 Error::with_message(Errno::EIO, "I/O operation fails")
+//             }
+//             status => panic!("Can not convert the status: {:?} to an error", status),
+//         }
+//     }
+// }
 
 impl From<core::str::Utf8Error> for Error {
     fn from(_: core::str::Utf8Error) -> Self {
@@ -217,4 +253,72 @@ impl From<core::ffi::FromBytesWithNulError> for Error {
     fn from(_: core::ffi::FromBytesWithNulError) -> Self {
         Error::with_message(Errno::E2BIG, "Cannot find null in cstring")
     }
+}
+
+// impl From<cpio_decoder::error::Error> for Error {
+//     fn from(cpio_error: cpio_decoder::error::Error) -> Self {
+//         match cpio_error {
+//             cpio_decoder::error::Error::MagicError => {
+//                 Error::with_message(Errno::EINVAL, "CPIO invalid magic number")
+//             }
+//             cpio_decoder::error::Error::Utf8Error => {
+//                 Error::with_message(Errno::EINVAL, "CPIO invalid utf-8 string")
+//             }
+//             cpio_decoder::error::Error::ParseIntError => {
+//                 Error::with_message(Errno::EINVAL, "CPIO parse int error")
+//             }
+//             cpio_decoder::error::Error::FileTypeError => {
+//                 Error::with_message(Errno::EINVAL, "CPIO invalid file type")
+//             }
+//             cpio_decoder::error::Error::FileNameError => {
+//                 Error::with_message(Errno::EINVAL, "CPIO invalid file name")
+//             }
+//             cpio_decoder::error::Error::BufferShortError => {
+//                 Error::with_message(Errno::EINVAL, "CPIO buffer is too short")
+//             }
+//             cpio_decoder::error::Error::IoError => {
+//                 Error::with_message(Errno::EIO, "CPIO buffer I/O error")
+//             }
+//         }
+//     }
+// }
+
+impl From<Error> for anti_frame::Error {
+    fn from(error: Error) -> Self {
+        match error.errno {
+            Errno::EACCES => anti_frame::Error::AccessDenied,
+            Errno::EIO => anti_frame::Error::IoError,
+            Errno::ENOMEM => anti_frame::Error::NoMemory,
+            Errno::EFAULT => anti_frame::Error::PageFault,
+            Errno::EINVAL => anti_frame::Error::InvalidArgs,
+            Errno::EBUSY => anti_frame::Error::NotEnoughResources,
+            _ => anti_frame::Error::InvalidArgs,
+        }
+    }
+}
+
+impl From<alloc::ffi::NulError> for Error {
+    fn from(_: alloc::ffi::NulError) -> Self {
+        Error::with_message(Errno::E2BIG, "Cannot find null in cstring")
+    }
+}
+
+impl From<int_to_c_enum::TryFromIntError> for Error {
+    fn from(_: int_to_c_enum::TryFromIntError) -> Self {
+        Error::with_message(Errno::EINVAL, "Invalid enum value")
+    }
+}
+
+#[macro_export]
+macro_rules! return_errno {
+    ($errno: expr) => {
+        return Err($crate::error::Error::new($errno))
+    };
+}
+
+#[macro_export]
+macro_rules! return_errno_with_message {
+    ($errno: expr, $message: expr) => {
+        return Err($crate::error::Error::with_message($errno, $message))
+    };
 }

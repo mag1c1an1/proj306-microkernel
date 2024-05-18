@@ -11,9 +11,10 @@ use xmas_elf::{
 };
 
 use crate::{
-    error::{Errno, Error, Result},
+    error::{Errno, Error},
     return_errno_with_message,
     sel4::v_region_t,
+    Result,
 };
 use alloc::{
     string::{String, ToString},

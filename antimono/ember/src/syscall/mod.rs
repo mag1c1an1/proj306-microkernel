@@ -1,7 +1,4 @@
-use crate::{
-    error::{Errno, Result},
-    return_errno_with_message,
-};
+use crate::{error::Errno, return_errno_with_message, Result};
 
 mod sel4_syscalls;
 // pub mod utils;
