@@ -234,18 +234,14 @@ mod sel4_syscalls;
 
 use anti_frame::cpu::UserContext;
 
-use self::sel4_syscalls::sel4_set_tls_base;
+use self::sel4_syscalls::{sel4_kernel_putchar, sel4_set_tls_base};
 
 macro_rules! define_syscall_nums {
     ( $( $name: ident = $num: expr ),+ ) => {
         $(
-            const $name: u64  = cast_i64_to_u64($num);
+            const $name: i64  = $num;
         )*
     }
-}
-
-const fn cast_i64_to_u64(val: i64) -> u64 {
-    val as u64
 }
 
 /// This macro is used to define syscall handler.
@@ -270,13 +266,13 @@ macro_rules! syscall_handler {
     (6, $fn_name: ident, $args: ident, $context: expr) => { $fn_name($args[0] as _, $args[1] as _, $args[2] as _, $args[3] as _, $args[4] as _, $args[5] as _, $context)};
 }
 pub struct SyscallArgument {
-    syscall_number: u64,
+    syscall_number: i64,
     args: [u64; 6],
 }
 
 impl SyscallArgument {
     fn new_from_context(context: &UserContext) -> Self {
-        let syscall_number = context.rax() as u64;
+        let syscall_number = context.rax() as i64;
         let mut args = [0u64; 6];
         args[0] = context.rdi() as u64;
         args[1] = context.rsi() as u64;
@@ -327,23 +323,24 @@ define_syscall_nums! {
     SYS_REPLY = -6,
     SYS_YIELD= -7,
     SYS_NB_RECV = -8,
-    // SYS_DEBUG_PUT_CHAR = -9,
-    // SYS_DEBUG_DUMP_SCHEDULER=-10,
-    // SYS_DEBUG_HALT = -11,
-    // SYS_DEBUG_CAP_IDENTIFY = -12,
-    // SYS_DEBUG_SNAPSHOT_RESTORE = -13,
-    // SYS_DEBUG_NAME_THREAD = -14,
-    // SYS_DEBUG_SEND_IPI = -15,
+    SYS_DEBUG_PUT_CHAR = -9,
+    SYS_DEBUG_DUMP_SCHEDULER=-10,
+    SYS_DEBUG_HALT = -11,
+    SYS_DEBUG_CAP_IDENTIFY = -12,
+    SYS_DEBUG_SNAPSHOT_RESTORE = -13,
+    SYS_DEBUG_NAME_THREAD = -14,
+    SYS_DEBUG_SEND_IPI = -15,
     SEL4_SET_TLS_BASE = -29
 }
 
 pub fn syscall_dispatch(
-    syscall_number: u64,
+    syscall_number: i64, // sel4 only
     args: [u64; 6],
     context: &mut UserContext,
 ) -> Result<SyscallReturn> {
     match syscall_number {
         SEL4_SET_TLS_BASE => syscall_handler!(0, sel4_set_tls_base, context),
+        SYS_DEBUG_PUT_CHAR => syscall_handler!(0, sel4_kernel_putchar, context),
         _ => {
             warn!("Unimplemented syscall number: {}", syscall_number);
             return_errno_with_message!(Errno::ENOSYS, "Unimplemented syscall");

@@ -1,5 +1,5 @@
-sel4_build_path := "../../seL4-stuff/sel4-tutorials-manifest/hello-world_build"
-obj-name := "hello-world-image-x86_64-pc99"
+sel4_build_path := "../../proj306-microkernel-test/emberTest/build"
+obj-name := "emberTest-image-x86_64-pc99"
 
 run: 
   cargo osdk run
