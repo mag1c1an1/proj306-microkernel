@@ -266,70 +266,68 @@ use core::intrinsics::size_of;
 use anti_frame::boot::initramfs;
 
 use crate::{
-    loader::Elf,
-    sel4::{
+    process::program_loader::elf::elf_file::Elf, sel4::{
         region_t, rootserver_mem_t, seL4_BootInfoFrameBits, seL4_BootInfoHeader, seL4_PageBits,
         seL4_WordBits, seL4_X86_BootInfo_mmap_t, seL4_X86_mb_mmap_t, v_region_t, PAGE_BITS,
         PAGE_SIZE,
-    },
-    BIT, ROUND_UP,
+    }, BIT, ROUND_UP
 };
 
-pub(crate) fn boot() -> Elf {
-    trace!("in ember");
-    // get user land image
-    let user_image = initramfs();
-    trace!("user_image len : {}", user_image.len());
-    // let x = MEMORY_REGIONS.get().unwrap();
-    // trace!("{:#?}", x);
-    let elf = Elf::parse_elf(user_image).unwrap();
-    let v_entry = elf.entry_point();
-    let ui_v_reg = elf.memory_bounds();
-    trace!("ELF_loading userland images from boot modules:");
-    trace!(
-        "size=0x{:x} v_entry=0x{:x} v_start=0x{:x}, v_end=0x{:x}",
-        ui_v_reg.end - ui_v_reg.start,
-        v_entry,
-        ui_v_reg.start,
-        ui_v_reg.end,
-    );
-    assert!(
-        ui_v_reg.start % PAGE_SIZE == 0,
-        "Userland image virtual start address must be page aligned"
-    );
-    // for ipc buffer frame and bootinfo frame, need 2 * 4K of addditional userland virtual memory
-    assert!(
-        ui_v_reg.end + 2 * (1 << PAGE_BITS) <= 0x7FFFFFFFFFFF,
-        "Userland image virtual end address is too high"
-    );
-    assert!(
-        v_entry >= ui_v_reg.start && v_entry < ui_v_reg.end,
-        "Userland imgae entry point does not lie within userland image"
-    );
+// pub(crate) fn boot() -> Elf {
+//     trace!("in ember");
+//     // get user land image
+//     let user_image = initramfs();
+//     trace!("user_image len : {}", user_image.len());
+//     // let x = MEMORY_REGIONS.get().unwrap();
+//     // trace!("{:#?}", x);
+//     let elf = Elf::parse_elf(user_image).unwrap();
+//     let v_entry = elf.entry_point();
+//     let ui_v_reg = elf.memory_bounds();
+//     trace!("ELF_loading userland images from boot modules:");
+//     trace!(
+//         "size=0x{:x} v_entry=0x{:x} v_start=0x{:x}, v_end=0x{:x}",
+//         ui_v_reg.end - ui_v_reg.start,
+//         v_entry,
+//         ui_v_reg.start,
+//         ui_v_reg.end,
+//     );
+//     assert!(
+//         ui_v_reg.start % PAGE_SIZE == 0,
+//         "Userland image virtual start address must be page aligned"
+//     );
+//     // for ipc buffer frame and bootinfo frame, need 2 * 4K of addditional userland virtual memory
+//     assert!(
+//         ui_v_reg.end + 2 * (1 << PAGE_BITS) <= 0x7FFFFFFFFFFF,
+//         "Userland image virtual end address is too high"
+//     );
+//     assert!(
+//         v_entry >= ui_v_reg.start && v_entry < ui_v_reg.end,
+//         "Userland imgae entry point does not lie within userland image"
+//     );
 
-    let ipcbuf_vptr = ui_v_reg.end;
-    let bi_frame_vptr = ipcbuf_vptr + BIT!(PAGE_BITS);
-    let extra_bi_frame_vptr = bi_frame_vptr + BIT!(seL4_BootInfoFrameBits);
+//     let ipcbuf_vptr = ui_v_reg.end;
+//     let bi_frame_vptr = ipcbuf_vptr + BIT!(PAGE_BITS);
+//     let extra_bi_frame_vptr = bi_frame_vptr + BIT!(seL4_BootInfoFrameBits);
 
-    let mut extra_bi_size = size_of::<seL4_BootInfoHeader>();
-    extra_bi_size += size_of::<seL4_X86_BootInfo_mmap_t>();
-    extra_bi_size += size_of::<seL4_BootInfoHeader>() + 4;
+//     let mut extra_bi_size = size_of::<seL4_BootInfoHeader>();
+//     extra_bi_size += size_of::<seL4_X86_BootInfo_mmap_t>();
+//     extra_bi_size += size_of::<seL4_BootInfoHeader>() + 4;
 
-    let extra_bi_size_bits = calculate_extra_bi_size_bits(extra_bi_size);
+//     let extra_bi_size_bits = calculate_extra_bi_size_bits(extra_bi_size);
 
-    /* The region of the initial thread is the user image + ipcbuf and boot info */
+//     /* The region of the initial thread is the user image + ipcbuf and boot info */
 
-    let _it_v_reg = v_region_t {
-        start: ui_v_reg.start,
-        end: ROUND_UP!(extra_bi_frame_vptr + BIT!(extra_bi_size_bits), PAGE_BITS),
-    };
+//     let _it_v_reg = v_region_t {
+//         start: ui_v_reg.start,
+//         end: ROUND_UP!(extra_bi_frame_vptr + BIT!(extra_bi_size_bits), PAGE_BITS),
+//     };
 
-    // iommu
+//     // iommu
 
-    // ignore vbe
+//     // ignore vbe
 
-    // trace!("drop to user space");
-    elf
-}
+//     // trace!("drop to user space");
+//     elf
+// }
 
-fn rootserver_mem_init() {}
+// fn rootserver_mem_init() {}

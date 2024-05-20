@@ -29,24 +29,32 @@
 //     config::{BI_FRAME_SIZE_BITS, PAGE_SIZE},
 //     loader::Elf,
 // };
+#![allow(warnings)]
 
 use align_ext::AlignExt;
-use alloc::{sync::Arc, vec};
+use alloc::{
+    sync::Arc,
+    vec::{self, Vec},
+};
 use anti_frame::{
+    arch::qemu::{exit_qemu, QemuExitCode},
+    boot::initramfs,
     cpu::UserContext,
     task::{Task, TaskOptions},
     user::{UserEvent, UserMode, UserSpace},
     vm::{PageFlags, Vaddr, VmAllocOptions, VmIo, VmMapOptions, VmSpace, PAGE_SIZE},
 };
 use error::Error;
+use process::Process;
 use sel4::create_frames_of_region_ret_t;
-use thread::{task::create_new_user_task, user::create_root_task_space, Thread};
+use thread::{task::create_new_user_task, Thread};
 
 use crate::thread::kernel_thread::{KernelThreadExt, ThreadOptions};
 
 #[macro_use]
 extern crate log;
 
+#[macro_use]
 extern crate alloc;
 
 mod boot;
@@ -61,7 +69,7 @@ pub mod error;
 // mod exception;
 // mod interrupt;
 // mod kernel;
-pub(crate) mod loader;
+// pub(crate) mod loader;
 // mod object;
 // #[cfg(feature = "ENABLE_SMP")]
 // mod smp;
@@ -74,8 +82,10 @@ mod syscall;
 // mod uintr;
 // mod utils;
 // mod vspace;
+pub mod process;
 pub mod sched;
 pub mod thread;
+pub mod utils;
 pub mod vm;
 
 pub(crate) type Result<T, E = Error> = core::result::Result<T, E>;
@@ -99,10 +109,15 @@ pub fn init() {
     sched::init();
 }
 
-pub fn run_root_task() {
-    let r_space = create_root_task_space();
-    // let t = current_thread!();
-    let task = create_new_user_task(Arc::new(r_space));
-    task.run();
-    // unreachable!()
+pub fn root_server() {
+    let elf_binary = initramfs();
+    let argv = Vec::new();
+    let envp = Vec::new();
+    Process::spawn_user_process(elf_binary, argv, envp, true);
+    exit_qemu(QemuExitCode::Success);
+}
+
+pub fn run_root_server() -> ! {
+    Thread::spawn_kernel_thread(ThreadOptions::new(root_server));
+    unreachable!()
 }

@@ -17,7 +17,7 @@ use log::trace;
 fn kernel_main() {
     // println!("[antimono] finish init aster frame");
     ember::init();
-    ember::run_root_task();
+    ember::run_root_server();
 }
 
 struct Sched {

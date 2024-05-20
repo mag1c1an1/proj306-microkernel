@@ -2,7 +2,7 @@
 
 use core::ffi::CStr;
 
-use align_ext::AlignExt;
+use alloc::{string::{String, ToString}, vec::Vec};
 use anti_frame::vm::Vaddr;
 /// A wrapper of xmas_elf's elf parsing
 use xmas_elf::{
@@ -10,16 +10,7 @@ use xmas_elf::{
     program::{self, ProgramHeader64},
 };
 
-use crate::{
-    error::{Errno, Error},
-    return_errno_with_message,
-    sel4::v_region_t,
-    Result,
-};
-use alloc::{
-    string::{String, ToString},
-    vec::Vec,
-};
+use crate::{error::{Errno, Error}, return_errno_with_message, Result};
 pub struct Elf {
     pub elf_header: ElfHeader,
     pub program_headers: Vec<ProgramHeader64>,
@@ -128,28 +119,6 @@ impl Elf {
     pub fn base_load_address_offset(&self) -> u64 {
         let phdr = self.program_headers.first().unwrap();
         phdr.virtual_addr - phdr.offset
-    }
-
-    /// refactor
-    pub fn memory_bounds(&self) -> v_region_t {
-        let mut start = 0x7fffffffffffffff;
-        let mut end = 0;
-        for phdr in &self.program_headers {
-            if phdr.mem_size > 0 {
-                let sect_start = phdr.virtual_addr;
-                let sect_end = sect_start + phdr.mem_size;
-                if sect_start < start {
-                    start = sect_start;
-                }
-                if sect_end > end {
-                    end = sect_end;
-                }
-            }
-        }
-        v_region_t {
-            start: start as usize,
-            end: (end as usize).align_up(4096),
-        }
     }
 }
 

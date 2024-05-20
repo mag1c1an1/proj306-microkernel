@@ -226,6 +226,7 @@ dependencies = [
  "intrusive-collections",
  "lazy_static",
  "log",
+ "pod",
  "spin 0.9.8",
  "typeflags",
  "typeflags-util",

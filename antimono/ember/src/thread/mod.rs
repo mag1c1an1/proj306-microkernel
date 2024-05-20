@@ -8,12 +8,12 @@ use anti_frame::task::Task;
 
 use self::status::{AtomicThreadStatus, ThreadStatus};
 
+pub mod exception;
 pub mod kernel_thread;
 pub mod status;
 pub mod task;
 pub mod thread_table;
 pub mod user;
-pub mod exception;
 
 pub type Tid = u32;
 

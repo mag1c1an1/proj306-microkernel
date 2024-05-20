@@ -6,17 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anti-frame = { path = "../crates/anti-frame" }
+anti-rights = { path = "../crates/anti-rights" }
+anti-rights-proc = { path = "../crates/anti-rights-proc" }
+align-ext = { path = "../crates/align-ext" }
+int-to-c-enum = { path = "../crates/int-to-c-enum" }
+typeflags = { path = "../crates/typeflags" }
+typeflags-util = { path = "../crates/typeflags-util" }
+pod = { git = "https://github.com/asterinas/pod", rev = "d7dba56" }
+intrusive-collections = "0.9"
 log = "0.4"
 spin = "0.9"
 xmas-elf = "0.9"
-anti-frame = { path = "../crates/anti-frame" }
-align-ext = { path = "../crates/align-ext" }
-int-to-c-enum = { path = "../crates/int-to-c-enum" }
-intrusive-collections = "0.9"
 lazy_static = { version = "1.0", features = ["spin_no_std"] }
-anti-rights = { path = "../crates/anti-rights" }
-anti-rights-proc = { path = "../crates/anti-rights-proc" }
-typeflags = { path = "../crates/typeflags" }
-typeflags-util = { path = "../crates/typeflags-util" }
-
 bitflags = "1.3"
