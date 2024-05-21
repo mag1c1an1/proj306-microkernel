@@ -5,7 +5,7 @@ use super::{
     Vmo, VmoChildOptions, VmoRightsOp,
 };
 use crate::Result;
-use anti_frame::vm::{VmFrame, VmIo};
+use anti_frame::vm::{HasPaddr, VmFrame, VmIo};
 use anti_rights::{Dup, Rights, TRightSet, TRights, Write};
 use anti_rights_proc::require;
 
@@ -163,5 +163,11 @@ impl<R: TRights> VmoRightsOp for Vmo<TRightSet<R>> {
     fn to_dyn(self) -> Vmo<Rights> {
         let rights = self.rights();
         Vmo(self.0, rights)
+    }
+}
+
+impl<R: TRights> HasPaddr for Vmo<TRightSet<R>> {
+    fn paddr(&self) -> anti_frame::prelude::Paddr {
+        self.0.paddr()
     }
 }

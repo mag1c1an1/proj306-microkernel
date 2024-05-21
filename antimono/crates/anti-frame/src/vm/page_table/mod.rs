@@ -18,7 +18,7 @@ use crate::{
 mod frame;
 use frame::*;
 mod cursor;
-pub(crate) use cursor::{Cursor, CursorMut, PageTableQueryResult};
+pub use cursor::{Cursor, CursorMut, PageTableQueryResult};
 #[cfg(ktest)]
 mod test;
 
@@ -64,12 +64,12 @@ impl PageTableMode for KernelMode {
 // Here are some const values that are determined by the paging constants.
 
 /// The page size at a given level.
-pub(crate) const fn page_size<C: PagingConstsTrait>(level: usize) -> usize {
+pub const fn page_size<C: PagingConstsTrait>(level: usize) -> usize {
     C::BASE_PAGE_SIZE << (nr_pte_index_bits::<C>() * (level - 1))
 }
 
 /// The number of page table entries per page table frame.
-pub(crate) const fn nr_ptes_per_node<C: PagingConstsTrait>() -> usize {
+pub const fn nr_ptes_per_node<C: PagingConstsTrait>() -> usize {
     C::BASE_PAGE_SIZE / C::PTE_SIZE
 }
 
@@ -87,7 +87,7 @@ const fn pte_index<C: PagingConstsTrait>(va: Vaddr, level: usize) -> usize {
 /// A handle to a page table.
 /// A page table can track the lifetime of the mapped physical frames.
 #[derive(Debug)]
-pub(crate) struct PageTable<
+pub struct PageTable<
     M: PageTableMode,
     E: PageTableEntryTrait = PageTableEntry,
     C: PagingConstsTrait = PagingConsts,
@@ -104,7 +104,7 @@ where
     [(); nr_ptes_per_node::<C>()]:,
     [(); C::NR_LEVELS]:,
 {
-    pub(crate) fn activate(&self) {
+    pub fn activate(&self) {
         // Safety: The usermode page table is safe to activate since the kernel
         // mappings are shared.
         unsafe {
@@ -116,7 +116,7 @@ where
     /// new page table.
     ///
     /// TODO: We may consider making the page table itself copy-on-write.
-    pub(crate) fn fork_copy_on_write(&self) -> Self {
+    pub fn fork_copy_on_write(&self) -> Self {
         let mut cursor = self.cursor_mut(&UserMode::VADDR_RANGE).unwrap();
         // Safety: Protecting the user page table is safe.
         unsafe {
@@ -178,7 +178,7 @@ where
     ///
     /// Then, one can use a user page table to call [`fork_copy_on_write`], creating
     /// other child page tables.
-    pub(crate) fn create_user_page_table(&self) -> PageTable<UserMode, E, C> {
+    pub fn create_user_page_table(&self) -> PageTable<UserMode, E, C> {
         let mut new_root_frame = PageTableFrame::<E, C>::new();
         let root_frame = self.root_frame.lock();
         for i in nr_ptes_per_node::<C>() / 2..nr_ptes_per_node::<C>() {
@@ -200,7 +200,7 @@ where
     /// The virtual address range should be aligned to the root level page size. Considering
     /// usize overflows, the caller should provide the index range of the root level pages
     /// instead of the virtual address range.
-    pub(crate) fn make_shared_tables(&self, root_index: Range<usize>) {
+    pub fn make_shared_tables(&self, root_index: Range<usize>) {
         let start = root_index.start;
         debug_assert!(start >= nr_ptes_per_node::<C>() / 2);
         debug_assert!(start < nr_ptes_per_node::<C>());
@@ -232,7 +232,7 @@ where
     [(); C::NR_LEVELS]:,
 {
     /// Create a new empty page table. Useful for the kernel page table and IOMMU page tables only.
-    pub(crate) fn empty() -> Self {
+    pub fn empty() -> Self {
         PageTable {
             root_frame: Arc::new(SpinLock::new(PageTableFrame::<E, C>::new())),
             _phantom: PhantomData,
@@ -240,11 +240,11 @@ where
     }
 
     /// The physical address of the root page table.
-    pub(crate) fn root_paddr(&self) -> Paddr {
+    pub fn root_paddr(&self) -> Paddr {
         self.root_frame.lock().start_paddr()
     }
 
-    pub(crate) unsafe fn map(
+    pub unsafe fn map(
         &self,
         vaddr: &Range<Vaddr>,
         paddr: &Range<Paddr>,
@@ -254,12 +254,12 @@ where
         Ok(())
     }
 
-    pub(crate) unsafe fn unmap(&self, vaddr: &Range<Vaddr>) -> Result<(), PageTableError> {
+    pub unsafe fn unmap(&self, vaddr: &Range<Vaddr>) -> Result<(), PageTableError> {
         self.cursor_mut(vaddr)?.unmap(vaddr.len());
         Ok(())
     }
 
-    pub(crate) unsafe fn protect(
+    pub unsafe fn protect(
         &self,
         vaddr: &Range<Vaddr>,
         op: impl FnMut(&mut PageProperty),
@@ -275,12 +275,12 @@ where
     /// Note that this function may fail reflect an accurate result if there are
     /// cursors concurrently accessing the same virtual address range, just like what
     /// happens for the hardware MMU walk.
-    pub(crate) fn query(&self, vaddr: Vaddr) -> Option<(Paddr, PageProperty)> {
+    pub fn query(&self, vaddr: Vaddr) -> Option<(Paddr, PageProperty)> {
         // Safety: The root frame is a valid page table frame so the address is valid.
         unsafe { page_walk::<E, C>(self.root_paddr(), vaddr) }
     }
 
-    pub(crate) unsafe fn activate_unchecked(&self) {
+    pub unsafe fn activate_unchecked(&self) {
         activate_page_table(self.root_paddr(), CachePolicy::Writeback);
     }
 
@@ -288,7 +288,7 @@ where
     ///
     /// If another cursor is already accessing the range, the new cursor will wait until the
     /// previous cursor is dropped.
-    pub(crate) fn cursor_mut(
+    pub fn cursor_mut(
         &'a self,
         va: &Range<Vaddr>,
     ) -> Result<CursorMut<'a, M, E, C>, PageTableError> {
@@ -299,7 +299,7 @@ where
     ///
     /// If another cursor is already accessing the range, the new cursor will wait until the
     /// previous cursor is dropped.
-    pub(crate) fn cursor(
+    pub fn cursor(
         &'a self,
         va: &Range<Vaddr>,
     ) -> Result<Cursor<'a, M, E, C>, PageTableError> {
@@ -309,7 +309,7 @@ where
     /// Create a new reference to the same page table.
     /// The caller must ensure that the kernel page table is not copied.
     /// This is only useful for IOMMU page tables. Think twice before using it in other cases.
-    pub(crate) unsafe fn shallow_copy(&self) -> Self {
+    pub unsafe fn shallow_copy(&self) -> Self {
         PageTable {
             root_frame: self.root_frame.clone(),
             _phantom: PhantomData,
@@ -393,7 +393,7 @@ pub(super) unsafe fn page_walk<E: PageTableEntryTrait, C: PagingConstsTrait>(
 }
 
 /// The interface for defining architecture-specific page table entries.
-pub(crate) trait PageTableEntryTrait: Clone + Copy + Sized + Pod + Debug {
+pub trait PageTableEntryTrait: Clone + Copy + Sized + Pod + Debug {
     /// Create a set of new invalid page table flags that indicates an absent page.
     ///
     /// Note that currently the implementation requires an all zero PTE to be an absent PTE.

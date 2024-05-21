@@ -234,7 +234,7 @@ mod sel4_syscalls;
 
 use anti_frame::cpu::UserContext;
 
-use self::sel4_syscalls::{sel4_kernel_putchar, sel4_set_tls_base};
+use self::sel4_syscalls::{sel4_kernel_putchar, sel4_set_tls_base, sel4_sys_debug_halt};
 
 macro_rules! define_syscall_nums {
     ( $( $name: ident = $num: expr ),+ ) => {
@@ -315,21 +315,21 @@ pub fn handle_syscall(context: &mut UserContext) {
 }
 
 define_syscall_nums! {
-    SYS_CALL = -1,
-    SYS_REPLY_RECV = -2,
-    SYS_SEND = -3,
-    SYS_NB_SEND = -4,
-    SYS_RECV = -5,
-    SYS_REPLY = -6,
-    SYS_YIELD= -7,
-    SYS_NB_RECV = -8,
-    SYS_DEBUG_PUT_CHAR = -9,
-    SYS_DEBUG_DUMP_SCHEDULER=-10,
-    SYS_DEBUG_HALT = -11,
-    SYS_DEBUG_CAP_IDENTIFY = -12,
-    SYS_DEBUG_SNAPSHOT_RESTORE = -13,
-    SYS_DEBUG_NAME_THREAD = -14,
-    SYS_DEBUG_SEND_IPI = -15,
+    SEL4_SYS_CALL = -1,
+    SEL4_SYS_REPLY_RECV = -2,
+    SEL4_SYS_SEND = -3,
+    SEL4_SYS_NB_SEND = -4,
+    SEL4_SYS_RECV = -5,
+    SEL4_SYS_REPLY = -6,
+    SEL4_SYS_YIELD= -7,
+    SEL4_SYS_NB_RECV = -8,
+    SEL4_SYS_DEBUG_PUT_CHAR = -9,
+    SEL4_SYS_DEBUG_DUMP_SCHEDULER=-10,
+    SEL4_SYS_DEBUG_HALT = -11,
+    SEL4_SYS_DEBUG_CAP_IDENTIFY = -12,
+    SEL4_SYS_DEBUG_SNAPSHOT_RESTORE = -13,
+    SEL4_SYS_DEBUG_NAME_THREAD = -14,
+    SEL4_SYS_DEBUG_SEND_IPI = -15,
     SEL4_SET_TLS_BASE = -29
 }
 
@@ -340,7 +340,8 @@ pub fn syscall_dispatch(
 ) -> Result<SyscallReturn> {
     match syscall_number {
         SEL4_SET_TLS_BASE => syscall_handler!(0, sel4_set_tls_base, context),
-        SYS_DEBUG_PUT_CHAR => syscall_handler!(0, sel4_kernel_putchar, context),
+        SEL4_SYS_DEBUG_PUT_CHAR => syscall_handler!(0, sel4_kernel_putchar, context),
+        SEL4_SYS_DEBUG_HALT => syscall_handler!(0, sel4_sys_debug_halt),
         _ => {
             warn!("Unimplemented syscall number: {}", syscall_number);
             return_errno_with_message!(Errno::ENOSYS, "Unimplemented syscall");

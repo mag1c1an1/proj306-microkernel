@@ -1,6 +1,7 @@
 use core::ffi::CStr;
 
 use alloc::{
+    boxed::Box,
     ffi::CString,
     sync::{Arc, Weak},
 };
@@ -9,6 +10,7 @@ use anti_frame::{sync::Mutex, user::UserSpace};
 use super::Process;
 use crate::{
     error::{Errno, Error},
+    sel4::seL4_BootInfo,
     thread::{status::ThreadStatus, task, thread_table, Thread, Tid},
     Result,
 };
@@ -21,6 +23,7 @@ pub struct SeL4Thread {
     is_root_server: bool,
     name: Mutex<Option<ThreadName>>,
     // capabilities
+    boot_info: Option<Box<seL4_BootInfo>>,
 }
 
 impl SeL4Thread {
@@ -112,7 +115,7 @@ impl SeL4ThreadBuilder {
         self
     }
 
-    pub fn is_main_thread(mut self, is_root_server: bool) -> Self {
+    pub fn is_root_server(mut self, is_root_server: bool) -> Self {
         self.is_root_server = is_root_server;
         self
     }
@@ -143,13 +146,14 @@ impl SeL4ThreadBuilder {
         let thread = Arc::new_cyclic(|thread_ref| {
             let task = task::create_new_user_task(user_space, thread_ref.clone());
             let status = ThreadStatus::Init;
-            let posix_thread = SeL4Thread {
+            let sel4_thread = SeL4Thread {
                 process,
                 is_root_server,
                 name: Mutex::new(thread_name),
+                boot_info: None,
             };
 
-            Thread::new(tid, task, posix_thread, status)
+            Thread::new(tid, task, sel4_thread, status)
         });
         thread_table::add_thread(thread.clone());
         thread

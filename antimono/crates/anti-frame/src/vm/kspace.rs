@@ -52,7 +52,7 @@ pub const fn kernel_loaded_offset() -> usize {
 const_assert!(LINEAR_MAPPING_VADDR_RANGE.end < kernel_loaded_offset());
 
 /// Convert physical address to virtual address using offset, only available inside aster-frame
-pub(crate) fn paddr_to_vaddr(pa: Paddr) -> usize {
+pub fn paddr_to_vaddr(pa: Paddr) -> usize {
     pa + LINEAR_MAPPING_BASE_VADDR
 }
 

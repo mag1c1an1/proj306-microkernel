@@ -9,17 +9,18 @@
 //! the basic info of process level vm segments,
 //! like init stack and heap.
 
-mod heap;
-mod init_stack;
-
 use alloc::{ffi::CString, vec::Vec};
 use anti_rights::Full;
-pub use heap::Heap;
 
 use crate::vm::vmar::Vmar;
 use crate::Result;
 
+mod heap;
+mod init_stack;
+
 pub use self::{
+    heap::Heap,
+    heap::USER_HEAP_BASE,
     heap::USER_HEAP_SIZE_LIMIT,
     init_stack::{
         aux_vec::{AuxKey, AuxVec},
@@ -87,7 +88,7 @@ impl ProcessVm {
     /// Allocates a new `ProcessVm`
     pub fn alloc(is_root_server: bool) -> Self {
         let root_vmar = Vmar::<Full>::new_root();
-        let (init_stack, heap) = if is_root_server {
+        let (init_stack, heap) = if !is_root_server {
             let init_stack = InitStack::new();
             init_stack.alloc_and_map_vmo(&root_vmar).unwrap();
             let heap = Heap::new();

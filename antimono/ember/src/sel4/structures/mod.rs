@@ -3,6 +3,9 @@
 pub mod cspace;
 pub mod vspace;
 
+use alloc::boxed::Box;
+use pod::Pod;
+
 use self::cspace::{cap_t, cte::cte_t};
 
 use super::{
@@ -11,10 +14,35 @@ use super::{
 };
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct seL4_BootInfoHeader {
     pub id: usize,
     pub len: usize,
+}
+
+#[repr(C, packed)]
+#[derive(Debug, Copy, Clone)]
+pub struct acpi_rsdp_t {
+    pub signature: [u8; 8],
+    pub checksum: u8,
+    pub oem_id: [u8; 6],
+    pub revision: u8,
+    pub rsdt_address: u32,
+    pub length: u32,
+    pub xsdt_address: u64,
+    pub extended_checksum: u8,
+    pub reserved: [u8; 3],
+}
+
+#[repr(C, packed)]
+#[derive(Debug, Copy, Clone)]
+pub struct seL4_X86_BootInfo_fb_t {
+    pub addr: u64,
+    pub pitch: u32,
+    pub width: u32,
+    pub height: u32,
+    pub bpp: u8,
+    pub type_: u8,
 }
 
 #[repr(C)]
@@ -61,14 +89,14 @@ pub struct ui_info_t {}
 pub type seL4_SlotPos = usize;
 
 #[repr(C)]
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Pod)]
 pub struct seL4_SlotRegion {
     pub start: seL4_SlotPos,
     pub end: seL4_SlotPos,
 }
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone, Pod)]
 pub struct seL4_UntypedDesc {
     pub paddr: usize,
     pub sizeBits: u8,
@@ -77,13 +105,13 @@ pub struct seL4_UntypedDesc {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone, Pod)]
 pub struct seL4_BootInfo {
     pub extraLen: usize,
     pub nodeID: usize,
     pub numNodes: usize,
     pub numIOPTLevels: usize,
-    pub ipcBuffer: *const seL4_IPCBuffer,
+    pub ipcBuffer: usize,
     pub empty: seL4_SlotRegion,
     pub sharedFrames: seL4_SlotRegion,
     pub userImageFrames: seL4_SlotRegion,
@@ -172,7 +200,6 @@ pub struct syscall_error_t {
     pub _type: usize,
 }
 
-pub type pptr_t = usize;
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum exception_t {

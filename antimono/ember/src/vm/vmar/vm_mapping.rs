@@ -100,7 +100,7 @@ impl VmMapping {
             can_overwrite,
         )?;
         trace!(
-            "build mapping, map_range = 0x{:x}- 0x{:x}",
+            "build mapping, map_range = 0x{:x} ~ 0x{:x}",
             map_to_addr,
             map_to_addr + size
         );

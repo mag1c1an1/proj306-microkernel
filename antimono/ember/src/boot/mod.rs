@@ -1,7 +1,7 @@
 // mod heap;
 // mod interface;
 // mod mm;
-mod root_server;
+// mod root_server;
 // mod untyped;
 // mod utils;
 
@@ -74,11 +74,9 @@ fn calculate_extra_bi_size_bits(size: usize) -> usize {
 }
 
 #[no_mangle]
-#[link_section = ".boot.bss"]
 pub static mut rootserver_mem: region_t = region_t { start: 0, end: 0 };
 
 #[no_mangle]
-#[link_section = ".boot.bss"]
 pub static mut rootserver: rootserver_mem_t = rootserver_mem_t {
     cnode: 0,
     vspace: 0,
@@ -266,11 +264,13 @@ use core::intrinsics::size_of;
 use anti_frame::boot::initramfs;
 
 use crate::{
-    process::program_loader::elf::elf_file::Elf, sel4::{
+    process::program_loader::elf::elf_file::Elf,
+    sel4::{
         region_t, rootserver_mem_t, seL4_BootInfoFrameBits, seL4_BootInfoHeader, seL4_PageBits,
         seL4_WordBits, seL4_X86_BootInfo_mmap_t, seL4_X86_mb_mmap_t, v_region_t, PAGE_BITS,
         PAGE_SIZE,
-    }, BIT, ROUND_UP
+    },
+    BIT, ROUND_UP,
 };
 
 // pub(crate) fn boot() -> Elf {
@@ -316,7 +316,6 @@ use crate::{
 //     let extra_bi_size_bits = calculate_extra_bi_size_bits(extra_bi_size);
 
 //     /* The region of the initial thread is the user image + ipcbuf and boot info */
-
 //     let _it_v_reg = v_region_t {
 //         start: ui_v_reg.start,
 //         end: ROUND_UP!(extra_bi_frame_vptr + BIT!(extra_bi_size_bits), PAGE_BITS),

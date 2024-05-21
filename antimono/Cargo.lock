@@ -228,6 +228,7 @@ dependencies = [
  "log",
  "pod",
  "spin 0.9.8",
+ "static_assertions",
  "typeflags",
  "typeflags-util",
  "xmas-elf",

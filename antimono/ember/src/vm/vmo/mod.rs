@@ -1,7 +1,9 @@
 use align_ext::AlignExt;
 use alloc::{sync::Arc, vec};
 use anti_frame::{
-    collections::xarray::{CursorMut, XArray, XMark}, sync::Mutex, vm::{VmAllocOptions, VmFrame, VmReader, VmWriter, PAGE_SIZE}
+    collections::xarray::{CursorMut, XArray, XMark},
+    sync::Mutex,
+    vm::{HasPaddr, VmAllocOptions, VmFrame, VmReader, VmWriter, PAGE_SIZE},
 };
 use anti_rights::Rights;
 use bitflags::bitflags;
@@ -584,4 +586,17 @@ pub fn get_page_idx_range(vmo_offset_range: &Range<usize>) -> Range<usize> {
     let start = vmo_offset_range.start.align_down(PAGE_SIZE);
     let end = vmo_offset_range.end.align_up(PAGE_SIZE);
     (start / PAGE_SIZE)..(end / PAGE_SIZE)
+}
+
+impl HasPaddr for Vmo_ {
+    fn paddr(&self) -> anti_frame::prelude::Paddr {
+        let start = 0..4096;
+        let mut ans = 0;
+        let ans_mut = &mut ans;
+        let phy = move |page: VmFrame| {
+            *ans_mut = page.paddr();
+        };
+        self.commit_and_operate(&start, phy, false).unwrap();
+        ans
+    }
 }

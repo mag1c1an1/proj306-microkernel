@@ -38,9 +38,9 @@ impl KernelThreadExt for Thread {
         };
         let tid = allocate_tid();
         let thread = Arc::new_cyclic(|thread_ref| {
-            let weal_thread = thread_ref.clone();
+            let weak_thread = thread_ref.clone();
             let task = TaskOptions::new(thread_fn)
-                .data(weal_thread)
+                .data(weak_thread)
                 .build()
                 .unwrap();
             let status = ThreadStatus::Init;

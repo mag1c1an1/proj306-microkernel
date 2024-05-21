@@ -2,7 +2,7 @@
 
 use core::ops::Range;
 
-use anti_frame::vm::{VmFrame, VmIo};
+use anti_frame::vm::{HasPaddr, VmFrame, VmIo};
 use anti_rights::{Rights, TRights};
 
 use crate::error::{Errno, Error};
@@ -174,5 +174,11 @@ impl VmoRightsOp for Vmo<Rights> {
     fn to_dyn(self) -> Vmo<Rights> {
         let rights = self.rights();
         Vmo(self.0, rights)
+    }
+}
+
+impl HasPaddr for Vmo<Rights> {
+    fn paddr(&self) -> anti_frame::prelude::Paddr {
+        self.0.paddr()
     }
 }

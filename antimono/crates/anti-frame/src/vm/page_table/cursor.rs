@@ -77,7 +77,7 @@ use crate::{
 /// that we modify the tree while traversing it. We use a guard stack to
 /// simulate the recursion, and adpot a page table locking protocol to
 /// provide concurrency.
-pub(crate) struct CursorMut<'a, M: PageTableMode, E: PageTableEntryTrait, C: PagingConstsTrait>
+pub struct CursorMut<'a, M: PageTableMode, E: PageTableEntryTrait, C: PagingConstsTrait>
 where
     [(); nr_ptes_per_node::<C>()]:,
     [(); C::NR_LEVELS]:,
@@ -99,7 +99,7 @@ where
     ///
     /// The cursor created will only be able to map, query or jump within the
     /// given range.
-    pub(crate) fn new(
+    pub fn new(
         pt: &'a PageTable<M, E, C>,
         va: &Range<Vaddr>,
     ) -> Result<Self, PageTableError> {
@@ -149,7 +149,7 @@ where
     ///
     /// It panics if the address is out of the range where the cursor is required to operate,
     /// or has bad alignment.
-    pub(crate) fn jump(&mut self, va: Vaddr) {
+    pub fn jump(&mut self, va: Vaddr) {
         assert!(self.barrier_va.contains(&va));
         assert!(va % C::BASE_PAGE_SIZE == 0);
         loop {
@@ -183,7 +183,7 @@ where
     ///
     /// The caller should ensure that the virtual range being mapped does
     /// not affect kernel's memory safety.
-    pub(crate) unsafe fn map(&mut self, frame: VmFrame, prop: PageProperty) {
+    pub unsafe fn map(&mut self, frame: VmFrame, prop: PageProperty) {
         let end = self.va + C::BASE_PAGE_SIZE;
         assert!(end <= self.barrier_va.end);
         // Go down if not applicable.
@@ -223,7 +223,7 @@ where
     /// The caller should ensure that
     ///  - the range being mapped does not affect kernel's memory safety;
     ///  - the physical address to be mapped is valid and safe to use.
-    pub(crate) unsafe fn map_pa(&mut self, pa: &Range<Paddr>, prop: PageProperty) {
+    pub unsafe fn map_pa(&mut self, pa: &Range<Paddr>, prop: PageProperty) {
         let end = self.va + pa.len();
         let mut pa = pa.start;
         assert!(end <= self.barrier_va.end);
@@ -263,7 +263,7 @@ where
     /// This function will panic if:
     ///  - the range to be unmapped is out of the range where the cursor is required to operate;
     ///  - the range covers only a part of a page.
-    pub(crate) unsafe fn unmap(&mut self, len: usize) {
+    pub unsafe fn unmap(&mut self, len: usize) {
         let end = self.va + len;
         assert!(end <= self.barrier_va.end);
         assert!(end % C::BASE_PAGE_SIZE == 0);
@@ -309,7 +309,7 @@ where
     ///
     /// This function will panic if:
     ///  - the range to be protected is out of the range where the cursor is required to operate.
-    pub(crate) unsafe fn protect(
+    pub unsafe fn protect(
         &mut self,
         len: usize,
         mut op: impl FnMut(&mut PageProperty),
@@ -351,7 +351,7 @@ where
     }
 
     /// Get the information of the current slot and move to the next slot.
-    pub(crate) fn query(&mut self) -> Option<PageTableQueryResult> {
+    pub fn query(&mut self) -> Option<PageTableQueryResult> {
         if self.va >= self.barrier_va.end {
             return None;
         }
@@ -549,7 +549,7 @@ where
 }
 
 #[derive(Clone, Debug)]
-pub(crate) enum PageTableQueryResult {
+pub enum PageTableQueryResult {
     NotMapped {
         va: Vaddr,
         len: usize,
@@ -570,7 +570,7 @@ pub(crate) enum PageTableQueryResult {
 /// The read-only cursor for traversal over the page table.
 ///
 /// It implements the `Iterator` trait to provide a convenient way to query over the page table.
-pub(crate) struct Cursor<'a, M: PageTableMode, E: PageTableEntryTrait, C: PagingConstsTrait>
+pub struct Cursor<'a, M: PageTableMode, E: PageTableEntryTrait, C: PagingConstsTrait>
 where
     [(); nr_ptes_per_node::<C>()]:,
     [(); C::NR_LEVELS]:,

@@ -13,7 +13,7 @@ mod frame;
 mod frame_allocator;
 pub(crate) mod heap_allocator;
 mod io;
-pub(crate) mod kspace;
+pub mod kspace;
 mod offset;
 mod options;
 pub(crate) mod page_prop;
@@ -43,7 +43,7 @@ pub const PAGE_SIZE: usize = 0x1000;
 
 /// A minimal set of constants that determines the paging system.
 /// This provides an abstraction over most paging modes in common architectures.
-pub(crate) trait PagingConstsTrait: Debug + 'static {
+pub trait PagingConstsTrait: Debug + 'static {
     /// The smallest page size.
     /// This is also the page size at level 1 page tables.
     const BASE_PAGE_SIZE: usize;
