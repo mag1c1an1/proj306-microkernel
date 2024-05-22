@@ -22,7 +22,17 @@ members = [
   "crates/int-to-c-enum",
   "crates/typeflags",
   "crates/typeflags-util",
+  "crates/sel4-rustfmt-helper",
+  "crates/sel4/bitfield-ops",
+  "crates/sel4/bitfield-parser",
+  "crates/sel4/bitfield-parser/test",
+  # "crates/sel4/build-env",
+  "crates/sel4/config",
+  "crates/sel4/config/data",
+  "crates/sel4/config/generic",
+  "crates/sel4/config/generic/types",
+  "crates/sel4/config/macros",
+  "crates/sel4/sys",
   "ember",
-  # "sel4",
 ]
 exclude = ["target/osdk/base"]
