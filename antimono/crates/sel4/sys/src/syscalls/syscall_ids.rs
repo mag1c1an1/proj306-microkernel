@@ -1,5 +1,3 @@
-#![allow(non_upper_case_globals)]
-
 pub const Call: i32 = -1i32;
 pub const ReplyRecv: i32 = -2i32;
 pub const Send: i32 = -3i32;

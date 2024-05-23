@@ -4,7 +4,6 @@ pub const VMKernelOnly: usize = 1;
 pub const VMReadOnly: usize = 2;
 pub const VMReadWrite: usize = 3;
 
-
 pub fn RISCVGetWriteFromVMRights(vm_rights: usize) -> bool {
     return vm_rights == VMReadWrite;
 }

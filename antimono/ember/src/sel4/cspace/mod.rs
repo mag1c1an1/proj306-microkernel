@@ -9,7 +9,7 @@ use crate::{
     MASK,
 };
 
-use super::{exception_t, vspace::pptr_t};
+use super::{exception::exception_t, vspace::pptr_t};
 
 pub mod cte;
 pub mod mdb;
@@ -240,6 +240,8 @@ impl cap_t {
         self.get_cap_type() as usize % 2 != 0
     }
 }
+
+// vm related cap
 impl cap_t {
     #[inline]
     pub fn new_page_table_cap(
@@ -249,14 +251,9 @@ impl cap_t {
         capPTBasePtr: usize,
     ) -> Self {
         let mut value = cap_t::default();
-        let mask = ((1u128 << 1) - 1) as usize;
-        value.words[0] |= (((capPTIsMapped >> 0) & mask) << 49);
-        let mask = ((1u128 << 28) - 1) as usize;
-        value.words[0] |= (((capPTMappedAddress >> 5) & mask) << 1);
-        let mask = ((1u128 << 12) - 1) as usize;
-        value.words[1] |= (((capPTMappedASID >> 0) & mask) << 48);
-        let mask = ((1u128 << 48) - 1) as usize;
-        value.words[1] |= (((capPTBasePtr >> 0) & mask) << 0);
+        value.words[0] =
+            0 | (capPTIsMapped & 0x1) << 49 | (capPTMappedAddress & 0xfffffff00000) << 1;
+        value.words[1] = 0 | (capPTMappedASID & 0xfff) << 48 | (capPTBasePtr & 0xffffffffffff) >> 0;
         value.words[0] |= ((CapTag::CapPageTableCap as usize & ((1usize << 5) - 1)) << 59);
         value
     }
@@ -277,8 +274,7 @@ impl cap_t {
     }
     #[inline]
     pub fn get_pt_mapped_address(&self) -> usize {
-        let mask = ((1u128 << 28) - 1) as usize;
-        let mut ret = ((self.words[0] >> 1) & mask) << 5;
+        let mut ret = (self.words[0] & 0x1ffffffe00000) >> 1;
         if true && (ret & (1usize << 47)) != 0 {
             ret |= 0xffff000000000000;
         }
@@ -286,14 +282,12 @@ impl cap_t {
     }
     #[inline]
     pub fn set_pt_mapped_address(&mut self, new_field: usize) {
-        let mask = ((1u128 << 28) - 1) as usize;
-        self.words[0] &= !(mask << 1);
-        self.words[0] |= (((new_field >> 5) & mask) << 1);
+        self.words[0] &= !0x1ffffffe00000;
+        self.words[0] |= (new_field << 1) & 0x1ffffffe00000;
     }
     #[inline]
     pub fn get_pt_mapped_asid(&self) -> usize {
-        let mask = ((1u128 << 12) - 1) as usize;
-        let mut ret = ((self.words[1] >> 48) & mask) << 0;
+        let mut ret = (self.words[1] & 0xfff000000000000) >> 48;
         if false && (ret & (1usize << 47)) != 0 {
             ret |= 0xffff000000000000;
         }
@@ -301,9 +295,8 @@ impl cap_t {
     }
     #[inline]
     pub fn set_pt_mapped_asid(&mut self, new_field: usize) {
-        let mask = ((1u128 << 12) - 1) as usize;
-        self.words[1] &= !(mask << 48);
-        self.words[1] |= (((new_field >> 0) & mask) << 48);
+        self.words[1] &= !0xfff000000000000;
+        self.words[1] |= (new_field << 48) & 0xfff000000000000;
     }
     #[inline]
     pub fn get_pt_base_ptr(&self) -> usize {
@@ -328,14 +321,9 @@ impl cap_t {
         capPDBasePtr: usize,
     ) -> Self {
         let mut value = cap_t::default();
-        let mask = ((1u128 << 1) - 1) as usize;
-        value.words[0] |= (((capPDIsMapped >> 0) & mask) << 49);
-        let mask = ((1u128 << 19) - 1) as usize;
-        value.words[0] |= (((capPDMappedAddress >> 29) & mask) << 1);
-        let mask = ((1u128 << 12) - 1) as usize;
-        value.words[1] |= (((capPDMappedASID >> 0) & mask) << 48);
-        let mask = ((1u128 << 48) - 1) as usize;
-        value.words[1] |= (((capPDBasePtr >> 0) & mask) << 0);
+        value.words[0] =
+            0 | (capPDIsMapped & 0x1) << 49 | (capPDMappedAddress & 0xffffe0000000) << 1;
+        value.words[1] = 0 | (capPDMappedASID & 0xfff) << 48 | (capPDBasePtr & 0xffffffffffff) >> 0;
         value.words[0] |= ((CapTag::CapPageDirectoryCap as usize & ((1usize << 5) - 1)) << 59);
         value
     }
@@ -356,8 +344,7 @@ impl cap_t {
     }
     #[inline]
     pub fn get_pd_mapped_address(&self) -> usize {
-        let mask = ((1u128 << 19) - 1) as usize;
-        let mut ret = ((self.words[0] >> 1) & mask) << 29;
+        let mut ret = (self.words[0] & 0x1ffffc0000000) >> 1;
         if true && (ret & (1usize << 47)) != 0 {
             ret |= 0xffff000000000000;
         }
@@ -366,8 +353,8 @@ impl cap_t {
     #[inline]
     pub fn set_pd_mapped_address(&mut self, new_field: usize) {
         let mask = ((1u128 << 19) - 1) as usize;
-        self.words[0] &= !(mask << 1);
-        self.words[0] |= (((new_field >> 29) & mask) << 1);
+        self.words[0] &= !0x1ffffc0000000;
+        self.words[0] |= (new_field << 1) & 0x1ffffc0000000;
     }
     #[inline]
     pub fn get_pd_mapped_asid(&self) -> usize {
@@ -407,15 +394,11 @@ impl cap_t {
         capPDPTBasePtr: usize,
     ) -> Self {
         let mut value = cap_t::default();
-        let mask = ((1u128 << 1) - 1) as usize;
-        value.words[0] |= (((capPDPTIsMapped >> 0) & mask) << 58);
-        let mask = ((1u128 << 10) - 1) as usize;
-        value.words[0] |= (((capPDPTMappedAddress >> 38) & mask) << 10);
-        let mask = ((1u128 << 12) - 1) as usize;
-        value.words[1] |= (((capPDPTMappedASID >> 0) & mask) << 48);
-        let mask = ((1u128 << 48) - 1) as usize;
-        value.words[1] |= (((capPDPTBasePtr >> 0) & mask) << 0);
-        value.words[0] |= ((CapTag::CapPageDirectoryCap as usize & ((1usize << 5) - 1)) << 59);
+        value.words[0] =
+            0 | (capPDPTIsMapped & 0x1) << 58 | (capPDPTMappedAddress & 0xffc000000000) << 10;
+        value.words[1] =
+            0 | (capPDPTMappedASID & 0xfff) << 48 | (capPDPTBasePtr & 0xffffffffffff) >> 0;
+        value.words[0] |= ((CapTag::CapPDPTCap as usize & ((1usize << 5) - 1)) << 59);
         value
     }
     #[inline]
@@ -435,8 +418,7 @@ impl cap_t {
     }
     #[inline]
     pub fn get_pdpt_mapped_address(&self) -> usize {
-        let mask = ((1u128 << 10) - 1) as usize;
-        let mut ret = ((self.words[0] >> 10) & mask) << 38;
+        let mut ret = (self.words[0] & 0x3ff000000000000) >> 10;
         if true && (ret & (1usize << 47)) != 0 {
             ret |= 0xffff000000000000;
         }
@@ -444,9 +426,8 @@ impl cap_t {
     }
     #[inline]
     pub fn set_pdpt_mapped_address(&mut self, new_field: usize) {
-        let mask = ((1u128 << 10) - 1) as usize;
-        self.words[0] &= !(mask << 10);
-        self.words[0] |= (((new_field >> 38) & mask) << 10);
+        self.words[0] &= !0x3ff000000000000;
+        self.words[0] |= (new_field << 10) & 0x3ff000000000000;
     }
     #[inline]
     pub fn get_pdpt_mapped_asid(&self) -> usize {
@@ -480,18 +461,14 @@ impl cap_t {
     }
     #[inline]
     pub fn new_pml4_cap(
-        capPML4TMappedASID: usize,
-        capPML4TIsMapped: usize,
+        capPML4MappedASID: usize,
+        capPML4IsMapped: usize,
         capPML4BasePtr: usize,
     ) -> Self {
         let mut value = cap_t::default();
-        let mask = ((1u128 << 12) - 1) as usize;
-        value.words[0] |= (((capPML4TMappedASID >> 0) & mask) << 0);
-        let mask = ((1u128 << 1) - 1) as usize;
-        value.words[0] |= (((capPML4TIsMapped >> 0) & mask) << 58);
-        let mask = ((1u128 << 64) - 1) as usize;
-        value.words[1] |= (((capPML4BasePtr >> 0) & mask) << 0);
-        value.words[0] |= ((CapTag::CapPageDirectoryCap as usize & ((1usize << 5) - 1)) << 59);
+        value.words[0] = 0 | (capPML4MappedASID & 0xfff) << 0 | (capPML4IsMapped & 0x1) << 58;
+        value.words[1] = 0 | capPML4BasePtr << 0;
+        value.words[0] |= ((CapTag::CapPML4Cap as usize & ((1usize << 5) - 1)) << 59);
         value
     }
     #[inline]
@@ -528,7 +505,7 @@ impl cap_t {
     pub fn get_pml4_base_ptr(&self) -> usize {
         let mask = ((1u128 << 64) - 1) as usize;
         let mut ret = ((self.words[1] >> 0) & mask) << 0;
-        if true && (ret & (1usize << 47)) != 0 {
+        if false && (ret & (1usize << 47)) != 0 {
             ret |= 0xffff000000000000;
         }
         ret

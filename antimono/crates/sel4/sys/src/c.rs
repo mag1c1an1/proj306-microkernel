@@ -6,4 +6,4 @@
 
 use crate::bf::*;
 
-include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+include!("bindings.rs");

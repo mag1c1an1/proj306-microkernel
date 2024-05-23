@@ -1,8 +1,25 @@
-use core::{intrinsics::{likely, unlikely}, ptr};
+use core::{
+    intrinsics::{likely, unlikely},
+    ptr,
+};
 
-use crate::{sel4::{cspace::is_cap_revocable, exception_t, utils::{convert_to_mut_type_ref, convert_to_option_mut_type_ref, convert_to_type_ref, MAX_FREE_INDEX}, wordRadix}, MASK};
+use crate::{
+    sel4::{
+        cspace::is_cap_revocable,
+        exception::exception_t,
+        utils::{
+            convert_to_mut_type_ref, convert_to_option_mut_type_ref, convert_to_type_ref,
+            MAX_FREE_INDEX,
+        },
+        wordRadix,
+    },
+    MASK,
+};
 
-use super::{cap_t, finaliseCap, finaliseSlot_ret, mdb::mdb_node_t, post_cap_deletion, preemptionPoint, same_object_as, same_region_as, zombie::capCyclicZombie, CapTag};
+use super::{
+    cap_t, finaliseCap, finaliseSlot_ret, mdb::mdb_node_t, post_cap_deletion, preemptionPoint,
+    same_object_as, same_region_as, zombie::capCyclicZombie, CapTag,
+};
 
 #[repr(C)]
 #[derive(Clone, Copy)]

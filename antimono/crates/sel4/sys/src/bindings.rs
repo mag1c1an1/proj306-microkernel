@@ -1,10 +1,3 @@
-#![allow(non_upper_case_globals)]
-#![allow(non_snake_case)]
-#![allow(non_camel_case_types)]
-
-use super::seL4_MessageInfo_t;
-
-
 pub const seL4_True: u32 = 1;
 pub const seL4_False: u32 = 0;
 pub const TLS_GDT_ENTRY: u32 = 7;
@@ -83,19 +76,19 @@ pub const SEL4_MAPPING_LOOKUP_NO_PDPT: u32 = 39;
 pub const SEL4_MAPPING_LOOKUP_NO_EPTPDPT: u32 = 39;
 pub const SEL4_MAPPING_LOOKUP_NO_EPTPD: u32 = 30;
 pub const SEL4_MAPPING_LOOKUP_NO_EPTPT: u32 = 21;
-pub type seL4_Int8 = core::ffi::c_schar;
-pub type seL4_Uint8 = core::ffi::c_uchar;
-pub type seL4_Int16 = core::ffi::c_short;
-pub type seL4_Uint16 = core::ffi::c_ushort;
-pub type seL4_Int32 = core::ffi::c_int;
-pub type seL4_Uint32 = core::ffi::c_uint;
-pub type seL4_Int64 = core::ffi::c_long;
-pub type seL4_Uint64 = core::ffi::c_ulong;
+pub type seL4_Int8 = ::core::ffi::c_schar;
+pub type seL4_Uint8 = ::core::ffi::c_uchar;
+pub type seL4_Int16 = ::core::ffi::c_short;
+pub type seL4_Uint16 = ::core::ffi::c_ushort;
+pub type seL4_Int32 = ::core::ffi::c_int;
+pub type seL4_Uint32 = ::core::ffi::c_uint;
+pub type seL4_Int64 = ::core::ffi::c_long;
+pub type seL4_Uint64 = ::core::ffi::c_ulong;
 pub type seL4_Bool = seL4_Int8;
 pub type seL4_Word = seL4_Uint64;
 pub type seL4_CPtr = seL4_Word;
 pub mod seL4_VMFault_Msg {
-    pub type Type = core::ffi::c_ulong;
+    pub type Type = ::core::ffi::c_ulong;
     pub const seL4_VMFault_IP: Type = 0;
     pub const seL4_VMFault_Addr: Type = 1;
     pub const seL4_VMFault_PrefetchFault: Type = 2;
@@ -104,7 +97,7 @@ pub mod seL4_VMFault_Msg {
     pub const _enum_pad_seL4_VMFault_Msg: Type = 9223372036854775807;
 }
 pub mod seL4_UnknownSyscall_Msg {
-    pub type Type = core::ffi::c_ulong;
+    pub type Type = ::core::ffi::c_ulong;
     pub const seL4_UnknownSyscall_RAX: Type = 0;
     pub const seL4_UnknownSyscall_RBX: Type = 1;
     pub const seL4_UnknownSyscall_RCX: Type = 2;
@@ -128,7 +121,7 @@ pub mod seL4_UnknownSyscall_Msg {
     pub const _enum_pad_seL4_UnknownSyscall_Msg: Type = 9223372036854775807;
 }
 pub mod seL4_UserException_Msg {
-    pub type Type = core::ffi::c_ulong;
+    pub type Type = ::core::ffi::c_ulong;
     pub const seL4_UserException_FaultIP: Type = 0;
     pub const seL4_UserException_SP: Type = 1;
     pub const seL4_UserException_FLAGS: Type = 2;
@@ -164,20 +157,20 @@ pub struct seL4_UserContext_ {
 }
 #[test]
 fn bindgen_test_layout_seL4_UserContext_() {
-    const UNINIT: core::mem::MaybeUninit<seL4_UserContext_> = core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_UserContext_> = ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_UserContext_>(),
+        ::core::mem::size_of::<seL4_UserContext_>(),
         160usize,
         concat!("Size of: ", stringify!(seL4_UserContext_))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_UserContext_>(),
+        ::core::mem::align_of::<seL4_UserContext_>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_UserContext_))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rip) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rip) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -187,7 +180,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rsp) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rsp) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -197,7 +190,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rflags) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rflags) as usize - ptr as usize },
         16usize,
         concat!(
             "Offset of field: ",
@@ -207,7 +200,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rax) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rax) as usize - ptr as usize },
         24usize,
         concat!(
             "Offset of field: ",
@@ -217,7 +210,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rbx) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rbx) as usize - ptr as usize },
         32usize,
         concat!(
             "Offset of field: ",
@@ -227,7 +220,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rcx) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rcx) as usize - ptr as usize },
         40usize,
         concat!(
             "Offset of field: ",
@@ -237,7 +230,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rdx) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rdx) as usize - ptr as usize },
         48usize,
         concat!(
             "Offset of field: ",
@@ -247,7 +240,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rsi) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rsi) as usize - ptr as usize },
         56usize,
         concat!(
             "Offset of field: ",
@@ -257,7 +250,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rdi) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rdi) as usize - ptr as usize },
         64usize,
         concat!(
             "Offset of field: ",
@@ -267,7 +260,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rbp) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rbp) as usize - ptr as usize },
         72usize,
         concat!(
             "Offset of field: ",
@@ -277,7 +270,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).r8) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).r8) as usize - ptr as usize },
         80usize,
         concat!(
             "Offset of field: ",
@@ -287,7 +280,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).r9) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).r9) as usize - ptr as usize },
         88usize,
         concat!(
             "Offset of field: ",
@@ -297,7 +290,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).r10) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).r10) as usize - ptr as usize },
         96usize,
         concat!(
             "Offset of field: ",
@@ -307,7 +300,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).r11) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).r11) as usize - ptr as usize },
         104usize,
         concat!(
             "Offset of field: ",
@@ -317,7 +310,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).r12) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).r12) as usize - ptr as usize },
         112usize,
         concat!(
             "Offset of field: ",
@@ -327,7 +320,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).r13) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).r13) as usize - ptr as usize },
         120usize,
         concat!(
             "Offset of field: ",
@@ -337,7 +330,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).r14) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).r14) as usize - ptr as usize },
         128usize,
         concat!(
             "Offset of field: ",
@@ -347,7 +340,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).r15) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).r15) as usize - ptr as usize },
         136usize,
         concat!(
             "Offset of field: ",
@@ -357,7 +350,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).fs_base) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).fs_base) as usize - ptr as usize },
         144usize,
         concat!(
             "Offset of field: ",
@@ -367,7 +360,7 @@ fn bindgen_test_layout_seL4_UserContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).gs_base) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).gs_base) as usize - ptr as usize },
         152usize,
         concat!(
             "Offset of field: ",
@@ -394,7 +387,7 @@ pub type seL4_X86_EPTPD = seL4_CPtr;
 pub type seL4_X86_EPTPT = seL4_CPtr;
 pub type seL4_X86_VCPU = seL4_CPtr;
 pub mod seL4_X86_VMAttributes {
-    pub type Type = core::ffi::c_ulong;
+    pub type Type = ::core::ffi::c_ulong;
     pub const seL4_X86_Default_VMAttributes: Type = 0;
     pub const seL4_X86_WriteBack: Type = 0;
     pub const seL4_X86_WriteThrough: Type = 1;
@@ -404,7 +397,7 @@ pub mod seL4_X86_VMAttributes {
     pub const _enum_pad_seL4_X86_VMAttributes: Type = 9223372036854775807;
 }
 pub mod seL4_X86_EPT_VMAttributes {
-    pub type Type = core::ffi::c_ulong;
+    pub type Type = ::core::ffi::c_ulong;
     pub const seL4_X86_EPT_Uncached_VMAttributes: Type = 6;
     pub const seL4_X86_EPT_Uncacheable: Type = 0;
     pub const seL4_X86_EPT_WriteCombining: Type = 1;
@@ -427,20 +420,20 @@ pub struct seL4_VCPUContext_ {
 }
 #[test]
 fn bindgen_test_layout_seL4_VCPUContext_() {
-    const UNINIT: core::mem::MaybeUninit<seL4_VCPUContext_> = core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_VCPUContext_> = ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_VCPUContext_>(),
+        ::core::mem::size_of::<seL4_VCPUContext_>(),
         56usize,
         concat!("Size of: ", stringify!(seL4_VCPUContext_))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_VCPUContext_>(),
+        ::core::mem::align_of::<seL4_VCPUContext_>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_VCPUContext_))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).eax) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).eax) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -450,7 +443,7 @@ fn bindgen_test_layout_seL4_VCPUContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).ebx) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).ebx) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -460,7 +453,7 @@ fn bindgen_test_layout_seL4_VCPUContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).ecx) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).ecx) as usize - ptr as usize },
         16usize,
         concat!(
             "Offset of field: ",
@@ -470,7 +463,7 @@ fn bindgen_test_layout_seL4_VCPUContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).edx) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).edx) as usize - ptr as usize },
         24usize,
         concat!(
             "Offset of field: ",
@@ -480,7 +473,7 @@ fn bindgen_test_layout_seL4_VCPUContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).esi) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).esi) as usize - ptr as usize },
         32usize,
         concat!(
             "Offset of field: ",
@@ -490,7 +483,7 @@ fn bindgen_test_layout_seL4_VCPUContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).edi) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).edi) as usize - ptr as usize },
         40usize,
         concat!(
             "Offset of field: ",
@@ -500,7 +493,7 @@ fn bindgen_test_layout_seL4_VCPUContext_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).ebp) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).ebp) as usize - ptr as usize },
         48usize,
         concat!(
             "Offset of field: ",
@@ -512,7 +505,7 @@ fn bindgen_test_layout_seL4_VCPUContext_() {
 }
 pub type seL4_VCPUContext = seL4_VCPUContext_;
 pub mod api_object {
-    pub type Type = core::ffi::c_uint;
+    pub type Type = ::core::ffi::c_uint;
     pub const seL4_UntypedObject: Type = 0;
     pub const seL4_TCBObject: Type = 1;
     pub const seL4_EndpointObject: Type = 2;
@@ -522,7 +515,7 @@ pub mod api_object {
 }
 pub use self::api_object::Type as seL4_ObjectType;
 pub mod _mode_object {
-    pub type Type = core::ffi::c_uint;
+    pub type Type = ::core::ffi::c_uint;
     pub const seL4_X86_PDPTObject: Type = 5;
     pub const seL4_X64_PML4Object: Type = 6;
     pub const seL4_X64_HugePageObject: Type = 7;
@@ -530,7 +523,7 @@ pub mod _mode_object {
 }
 pub use self::_mode_object::Type as seL4_seL4ArchObjectType;
 pub mod _object {
-    pub type Type = core::ffi::c_uint;
+    pub type Type = ::core::ffi::c_uint;
     pub const seL4_X86_4K: Type = 8;
     pub const seL4_X86_LargePageObject: Type = 9;
     pub const seL4_X86_PageTableObject: Type = 10;
@@ -539,7 +532,7 @@ pub mod _object {
 }
 pub use self::_object::Type as seL4_ArchObjectType;
 pub mod seL4_Error {
-    pub type Type = core::ffi::c_uint;
+    pub type Type = ::core::ffi::c_uint;
     pub const seL4_NoError: Type = 0;
     pub const seL4_InvalidArgument: Type = 1;
     pub const seL4_InvalidCapability: Type = 2;
@@ -554,19 +547,19 @@ pub mod seL4_Error {
     pub const seL4_NumErrors: Type = 11;
 }
 pub mod priorityConstants {
-    pub type Type = core::ffi::c_int;
+    pub type Type = ::core::ffi::c_int;
     pub const seL4_InvalidPrio: Type = -1;
     pub const seL4_MinPrio: Type = 0;
     pub const seL4_MaxPrio: Type = 255;
 }
 pub mod seL4_MsgLimits {
-    pub type Type = core::ffi::c_uint;
+    pub type Type = ::core::ffi::c_uint;
     pub const seL4_MsgLengthBits: Type = 7;
     pub const seL4_MsgExtraCapBits: Type = 2;
     pub const seL4_MsgMaxLength: Type = 120;
 }
 pub mod seL4_LookupFailureType {
-    pub type Type = core::ffi::c_ulong;
+    pub type Type = ::core::ffi::c_ulong;
     pub const seL4_NoFailure: Type = 0;
     pub const seL4_InvalidRoot: Type = 1;
     pub const seL4_MissingCapability: Type = 2;
@@ -586,20 +579,20 @@ pub struct seL4_IPCBuffer_ {
 }
 #[test]
 fn bindgen_test_layout_seL4_IPCBuffer_() {
-    const UNINIT: core::mem::MaybeUninit<seL4_IPCBuffer_> = core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_IPCBuffer_> = ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_IPCBuffer_>(),
+        ::core::mem::size_of::<seL4_IPCBuffer_>(),
         1024usize,
         concat!("Size of: ", stringify!(seL4_IPCBuffer_))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_IPCBuffer_>(),
+        ::core::mem::align_of::<seL4_IPCBuffer_>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_IPCBuffer_))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).tag) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).tag) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -609,7 +602,7 @@ fn bindgen_test_layout_seL4_IPCBuffer_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).msg) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).msg) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -619,7 +612,7 @@ fn bindgen_test_layout_seL4_IPCBuffer_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).userData) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).userData) as usize - ptr as usize },
         968usize,
         concat!(
             "Offset of field: ",
@@ -629,7 +622,7 @@ fn bindgen_test_layout_seL4_IPCBuffer_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).caps_or_badges) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).caps_or_badges) as usize - ptr as usize },
         976usize,
         concat!(
             "Offset of field: ",
@@ -639,7 +632,7 @@ fn bindgen_test_layout_seL4_IPCBuffer_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).receiveCNode) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).receiveCNode) as usize - ptr as usize },
         1000usize,
         concat!(
             "Offset of field: ",
@@ -649,7 +642,7 @@ fn bindgen_test_layout_seL4_IPCBuffer_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).receiveIndex) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).receiveIndex) as usize - ptr as usize },
         1008usize,
         concat!(
             "Offset of field: ",
@@ -659,7 +652,7 @@ fn bindgen_test_layout_seL4_IPCBuffer_() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).receiveDepth) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).receiveDepth) as usize - ptr as usize },
         1016usize,
         concat!(
             "Offset of field: ",
@@ -671,16 +664,16 @@ fn bindgen_test_layout_seL4_IPCBuffer_() {
 }
 impl Default for seL4_IPCBuffer_ {
     fn default() -> Self {
-        let mut s = core::mem::MaybeUninit::<Self>::uninit();
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
         unsafe {
-            core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
             s.assume_init()
         }
     }
 }
 pub type seL4_IPCBuffer = seL4_IPCBuffer_;
 pub mod seL4_CapFault_Msg {
-    pub type Type = core::ffi::c_ulong;
+    pub type Type = ::core::ffi::c_ulong;
     pub const seL4_CapFault_IP: Type = 0;
     pub const seL4_CapFault_Addr: Type = 1;
     pub const seL4_CapFault_InRecvPhase: Type = 2;
@@ -706,26 +699,26 @@ pub type seL4_Time = seL4_Uint64;
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_X86_VCPU_ReadMSR {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub value: seL4_Word,
 }
 #[test]
 fn bindgen_test_layout_seL4_X86_VCPU_ReadMSR() {
-    const UNINIT: core::mem::MaybeUninit<seL4_X86_VCPU_ReadMSR> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_X86_VCPU_ReadMSR> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_X86_VCPU_ReadMSR>(),
+        ::core::mem::size_of::<seL4_X86_VCPU_ReadMSR>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_X86_VCPU_ReadMSR))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_X86_VCPU_ReadMSR>(),
+        ::core::mem::align_of::<seL4_X86_VCPU_ReadMSR>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_X86_VCPU_ReadMSR))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -735,7 +728,7 @@ fn bindgen_test_layout_seL4_X86_VCPU_ReadMSR() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).value) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).value) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -748,26 +741,26 @@ fn bindgen_test_layout_seL4_X86_VCPU_ReadMSR() {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_X86_VCPU_WriteMSR {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub written: seL4_Word,
 }
 #[test]
 fn bindgen_test_layout_seL4_X86_VCPU_WriteMSR() {
-    const UNINIT: core::mem::MaybeUninit<seL4_X86_VCPU_WriteMSR> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_X86_VCPU_WriteMSR> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_X86_VCPU_WriteMSR>(),
+        ::core::mem::size_of::<seL4_X86_VCPU_WriteMSR>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_X86_VCPU_WriteMSR))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_X86_VCPU_WriteMSR>(),
+        ::core::mem::align_of::<seL4_X86_VCPU_WriteMSR>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_X86_VCPU_WriteMSR))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -777,7 +770,7 @@ fn bindgen_test_layout_seL4_X86_VCPU_WriteMSR() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).written) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).written) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -790,17 +783,17 @@ fn bindgen_test_layout_seL4_X86_VCPU_WriteMSR() {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_X86_PageDirectory_GetStatusBits {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub accessed: seL4_Word,
     pub dirty: seL4_Word,
 }
 #[test]
 fn bindgen_test_layout_seL4_X86_PageDirectory_GetStatusBits() {
-    const UNINIT: core::mem::MaybeUninit<seL4_X86_PageDirectory_GetStatusBits> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_X86_PageDirectory_GetStatusBits> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_X86_PageDirectory_GetStatusBits>(),
+        ::core::mem::size_of::<seL4_X86_PageDirectory_GetStatusBits>(),
         24usize,
         concat!(
             "Size of: ",
@@ -808,7 +801,7 @@ fn bindgen_test_layout_seL4_X86_PageDirectory_GetStatusBits() {
         )
     );
     assert_eq!(
-        core::mem::align_of::<seL4_X86_PageDirectory_GetStatusBits>(),
+        ::core::mem::align_of::<seL4_X86_PageDirectory_GetStatusBits>(),
         8usize,
         concat!(
             "Alignment of ",
@@ -816,7 +809,7 @@ fn bindgen_test_layout_seL4_X86_PageDirectory_GetStatusBits() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -826,7 +819,7 @@ fn bindgen_test_layout_seL4_X86_PageDirectory_GetStatusBits() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).accessed) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).accessed) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -836,7 +829,7 @@ fn bindgen_test_layout_seL4_X86_PageDirectory_GetStatusBits() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).dirty) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).dirty) as usize - ptr as usize },
         16usize,
         concat!(
             "Offset of field: ",
@@ -849,26 +842,26 @@ fn bindgen_test_layout_seL4_X86_PageDirectory_GetStatusBits() {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_X86_VCPU_ReadVMCS {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub value: seL4_Word,
 }
 #[test]
 fn bindgen_test_layout_seL4_X86_VCPU_ReadVMCS() {
-    const UNINIT: core::mem::MaybeUninit<seL4_X86_VCPU_ReadVMCS> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_X86_VCPU_ReadVMCS> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_X86_VCPU_ReadVMCS>(),
+        ::core::mem::size_of::<seL4_X86_VCPU_ReadVMCS>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_X86_VCPU_ReadVMCS))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_X86_VCPU_ReadVMCS>(),
+        ::core::mem::align_of::<seL4_X86_VCPU_ReadVMCS>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_X86_VCPU_ReadVMCS))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -878,7 +871,7 @@ fn bindgen_test_layout_seL4_X86_VCPU_ReadVMCS() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).value) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).value) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -891,26 +884,26 @@ fn bindgen_test_layout_seL4_X86_VCPU_ReadVMCS() {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_X86_VCPU_WriteVMCS {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub written: seL4_Word,
 }
 #[test]
 fn bindgen_test_layout_seL4_X86_VCPU_WriteVMCS() {
-    const UNINIT: core::mem::MaybeUninit<seL4_X86_VCPU_WriteVMCS> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_X86_VCPU_WriteVMCS> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_X86_VCPU_WriteVMCS>(),
+        ::core::mem::size_of::<seL4_X86_VCPU_WriteVMCS>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_X86_VCPU_WriteVMCS))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_X86_VCPU_WriteVMCS>(),
+        ::core::mem::align_of::<seL4_X86_VCPU_WriteVMCS>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_X86_VCPU_WriteVMCS))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -920,7 +913,7 @@ fn bindgen_test_layout_seL4_X86_VCPU_WriteVMCS() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).written) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).written) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -933,7 +926,7 @@ fn bindgen_test_layout_seL4_X86_VCPU_WriteVMCS() {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_TCB_GetBreakpoint {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub vaddr: seL4_Word,
     pub type_: seL4_Word,
     pub size: seL4_Word,
@@ -942,21 +935,21 @@ pub struct seL4_TCB_GetBreakpoint {
 }
 #[test]
 fn bindgen_test_layout_seL4_TCB_GetBreakpoint() {
-    const UNINIT: core::mem::MaybeUninit<seL4_TCB_GetBreakpoint> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_TCB_GetBreakpoint> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_TCB_GetBreakpoint>(),
+        ::core::mem::size_of::<seL4_TCB_GetBreakpoint>(),
         48usize,
         concat!("Size of: ", stringify!(seL4_TCB_GetBreakpoint))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_TCB_GetBreakpoint>(),
+        ::core::mem::align_of::<seL4_TCB_GetBreakpoint>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_TCB_GetBreakpoint))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -966,7 +959,7 @@ fn bindgen_test_layout_seL4_TCB_GetBreakpoint() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).vaddr) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).vaddr) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -976,7 +969,7 @@ fn bindgen_test_layout_seL4_TCB_GetBreakpoint() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
         16usize,
         concat!(
             "Offset of field: ",
@@ -986,7 +979,7 @@ fn bindgen_test_layout_seL4_TCB_GetBreakpoint() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
         24usize,
         concat!(
             "Offset of field: ",
@@ -996,7 +989,7 @@ fn bindgen_test_layout_seL4_TCB_GetBreakpoint() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).rw) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).rw) as usize - ptr as usize },
         32usize,
         concat!(
             "Offset of field: ",
@@ -1006,7 +999,7 @@ fn bindgen_test_layout_seL4_TCB_GetBreakpoint() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).is_enabled) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).is_enabled) as usize - ptr as usize },
         40usize,
         concat!(
             "Offset of field: ",
@@ -1019,21 +1012,21 @@ fn bindgen_test_layout_seL4_TCB_GetBreakpoint() {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_TCB_ConfigureSingleStepping {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub bp_was_consumed: seL4_Bool,
 }
 #[test]
 fn bindgen_test_layout_seL4_TCB_ConfigureSingleStepping() {
-    const UNINIT: core::mem::MaybeUninit<seL4_TCB_ConfigureSingleStepping> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_TCB_ConfigureSingleStepping> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_TCB_ConfigureSingleStepping>(),
+        ::core::mem::size_of::<seL4_TCB_ConfigureSingleStepping>(),
         8usize,
         concat!("Size of: ", stringify!(seL4_TCB_ConfigureSingleStepping))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_TCB_ConfigureSingleStepping>(),
+        ::core::mem::align_of::<seL4_TCB_ConfigureSingleStepping>(),
         4usize,
         concat!(
             "Alignment of ",
@@ -1041,7 +1034,7 @@ fn bindgen_test_layout_seL4_TCB_ConfigureSingleStepping() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -1051,7 +1044,7 @@ fn bindgen_test_layout_seL4_TCB_ConfigureSingleStepping() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).bp_was_consumed) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).bp_was_consumed) as usize - ptr as usize },
         4usize,
         concat!(
             "Offset of field: ",
@@ -1064,26 +1057,26 @@ fn bindgen_test_layout_seL4_TCB_ConfigureSingleStepping() {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_SchedContext_Consumed {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub consumed: seL4_Time,
 }
 #[test]
 fn bindgen_test_layout_seL4_SchedContext_Consumed() {
-    const UNINIT: core::mem::MaybeUninit<seL4_SchedContext_Consumed> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_SchedContext_Consumed> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_SchedContext_Consumed>(),
+        ::core::mem::size_of::<seL4_SchedContext_Consumed>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_SchedContext_Consumed))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_SchedContext_Consumed>(),
+        ::core::mem::align_of::<seL4_SchedContext_Consumed>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_SchedContext_Consumed))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -1093,7 +1086,7 @@ fn bindgen_test_layout_seL4_SchedContext_Consumed() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).consumed) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).consumed) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -1106,26 +1099,26 @@ fn bindgen_test_layout_seL4_SchedContext_Consumed() {
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct seL4_SchedContext_YieldTo {
-    pub error: core::ffi::c_int,
+    pub error: ::core::ffi::c_int,
     pub consumed: seL4_Time,
 }
 #[test]
 fn bindgen_test_layout_seL4_SchedContext_YieldTo() {
-    const UNINIT: core::mem::MaybeUninit<seL4_SchedContext_YieldTo> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_SchedContext_YieldTo> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_SchedContext_YieldTo>(),
+        ::core::mem::size_of::<seL4_SchedContext_YieldTo>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_SchedContext_YieldTo))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_SchedContext_YieldTo>(),
+        ::core::mem::align_of::<seL4_SchedContext_YieldTo>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_SchedContext_YieldTo))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).error) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -1135,7 +1128,7 @@ fn bindgen_test_layout_seL4_SchedContext_YieldTo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).consumed) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).consumed) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -1146,7 +1139,7 @@ fn bindgen_test_layout_seL4_SchedContext_YieldTo() {
     );
 }
 pub mod seL4_RootCNodeCapSlots {
-    pub type Type = core::ffi::c_uint;
+    pub type Type = ::core::ffi::c_uint;
     pub const seL4_CapNull: Type = 0;
     pub const seL4_CapInitThreadTCB: Type = 1;
     pub const seL4_CapInitThreadCNode: Type = 2;
@@ -1174,20 +1167,20 @@ pub struct seL4_SlotRegion {
 }
 #[test]
 fn bindgen_test_layout_seL4_SlotRegion() {
-    const UNINIT: core::mem::MaybeUninit<seL4_SlotRegion> = core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_SlotRegion> = ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_SlotRegion>(),
+        ::core::mem::size_of::<seL4_SlotRegion>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_SlotRegion))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_SlotRegion>(),
+        ::core::mem::align_of::<seL4_SlotRegion>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_SlotRegion))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).start) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).start) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -1197,7 +1190,7 @@ fn bindgen_test_layout_seL4_SlotRegion() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).end) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).end) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -1217,20 +1210,20 @@ pub struct seL4_UntypedDesc {
 }
 #[test]
 fn bindgen_test_layout_seL4_UntypedDesc() {
-    const UNINIT: core::mem::MaybeUninit<seL4_UntypedDesc> = core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_UntypedDesc> = ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_UntypedDesc>(),
+        ::core::mem::size_of::<seL4_UntypedDesc>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_UntypedDesc))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_UntypedDesc>(),
+        ::core::mem::align_of::<seL4_UntypedDesc>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_UntypedDesc))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).paddr) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).paddr) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -1240,7 +1233,7 @@ fn bindgen_test_layout_seL4_UntypedDesc() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).sizeBits) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).sizeBits) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -1250,7 +1243,7 @@ fn bindgen_test_layout_seL4_UntypedDesc() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).isDevice) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).isDevice) as usize - ptr as usize },
         9usize,
         concat!(
             "Offset of field: ",
@@ -1260,7 +1253,7 @@ fn bindgen_test_layout_seL4_UntypedDesc() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).padding) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).padding) as usize - ptr as usize },
         10usize,
         concat!(
             "Offset of field: ",
@@ -1291,20 +1284,20 @@ pub struct seL4_BootInfo {
 }
 #[test]
 fn bindgen_test_layout_seL4_BootInfo() {
-    const UNINIT: core::mem::MaybeUninit<seL4_BootInfo> = core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_BootInfo> = ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_BootInfo>(),
+        ::core::mem::size_of::<seL4_BootInfo>(),
         3848usize,
         concat!("Size of: ", stringify!(seL4_BootInfo))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_BootInfo>(),
+        ::core::mem::align_of::<seL4_BootInfo>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_BootInfo))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).extraLen) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).extraLen) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -1314,7 +1307,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).nodeID) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).nodeID) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",
@@ -1324,7 +1317,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).numNodes) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).numNodes) as usize - ptr as usize },
         16usize,
         concat!(
             "Offset of field: ",
@@ -1334,7 +1327,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).numIOPTLevels) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).numIOPTLevels) as usize - ptr as usize },
         24usize,
         concat!(
             "Offset of field: ",
@@ -1344,7 +1337,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).ipcBuffer) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).ipcBuffer) as usize - ptr as usize },
         32usize,
         concat!(
             "Offset of field: ",
@@ -1354,7 +1347,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).empty) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).empty) as usize - ptr as usize },
         40usize,
         concat!(
             "Offset of field: ",
@@ -1364,7 +1357,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).sharedFrames) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).sharedFrames) as usize - ptr as usize },
         56usize,
         concat!(
             "Offset of field: ",
@@ -1374,7 +1367,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).userImageFrames) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).userImageFrames) as usize - ptr as usize },
         72usize,
         concat!(
             "Offset of field: ",
@@ -1384,7 +1377,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).userImagePaging) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).userImagePaging) as usize - ptr as usize },
         88usize,
         concat!(
             "Offset of field: ",
@@ -1394,7 +1387,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).ioSpaceCaps) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).ioSpaceCaps) as usize - ptr as usize },
         104usize,
         concat!(
             "Offset of field: ",
@@ -1404,7 +1397,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).extraBIPages) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).extraBIPages) as usize - ptr as usize },
         120usize,
         concat!(
             "Offset of field: ",
@@ -1414,7 +1407,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).initThreadCNodeSizeBits) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).initThreadCNodeSizeBits) as usize - ptr as usize },
         136usize,
         concat!(
             "Offset of field: ",
@@ -1424,7 +1417,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).initThreadDomain) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).initThreadDomain) as usize - ptr as usize },
         144usize,
         concat!(
             "Offset of field: ",
@@ -1434,7 +1427,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).untyped) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).untyped) as usize - ptr as usize },
         152usize,
         concat!(
             "Offset of field: ",
@@ -1444,7 +1437,7 @@ fn bindgen_test_layout_seL4_BootInfo() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).untypedList) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).untypedList) as usize - ptr as usize },
         168usize,
         concat!(
             "Offset of field: ",
@@ -1456,15 +1449,15 @@ fn bindgen_test_layout_seL4_BootInfo() {
 }
 impl Default for seL4_BootInfo {
     fn default() -> Self {
-        let mut s = core::mem::MaybeUninit::<Self>::uninit();
+        let mut s = ::core::mem::MaybeUninit::<Self>::uninit();
         unsafe {
-            core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            ::core::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
             s.assume_init()
         }
     }
 }
 pub mod seL4_BootInfoID {
-    pub type Type = core::ffi::c_ulong;
+    pub type Type = ::core::ffi::c_ulong;
     pub const SEL4_BOOTINFO_HEADER_PADDING: Type = 0;
     pub const SEL4_BOOTINFO_HEADER_X86_VBE: Type = 1;
     pub const SEL4_BOOTINFO_HEADER_X86_MBMMAP: Type = 2;
@@ -1483,21 +1476,21 @@ pub struct seL4_BootInfoHeader {
 }
 #[test]
 fn bindgen_test_layout_seL4_BootInfoHeader() {
-    const UNINIT: core::mem::MaybeUninit<seL4_BootInfoHeader> =
-        core::mem::MaybeUninit::uninit();
+    const UNINIT: ::core::mem::MaybeUninit<seL4_BootInfoHeader> =
+        ::core::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        core::mem::size_of::<seL4_BootInfoHeader>(),
+        ::core::mem::size_of::<seL4_BootInfoHeader>(),
         16usize,
         concat!("Size of: ", stringify!(seL4_BootInfoHeader))
     );
     assert_eq!(
-        core::mem::align_of::<seL4_BootInfoHeader>(),
+        ::core::mem::align_of::<seL4_BootInfoHeader>(),
         8usize,
         concat!("Alignment of ", stringify!(seL4_BootInfoHeader))
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).id) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).id) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
@@ -1507,7 +1500,7 @@ fn bindgen_test_layout_seL4_BootInfoHeader() {
         )
     );
     assert_eq!(
-        unsafe { core::ptr::addr_of!((*ptr).len) as usize - ptr as usize },
+        unsafe { ::core::ptr::addr_of!((*ptr).len) as usize - ptr as usize },
         8usize,
         concat!(
             "Offset of field: ",

@@ -349,7 +349,7 @@ where
 ///
 /// To mitigate this problem, the page table nodes are by default not
 /// actively recycled, until we find an appropriate solution.
-pub(super) unsafe fn page_walk<E: PageTableEntryTrait, C: PagingConstsTrait>(
+pub unsafe fn page_walk<E: PageTableEntryTrait, C: PagingConstsTrait>(
     root_paddr: Paddr,
     vaddr: Vaddr,
 ) -> Option<(Paddr, PageProperty)> {

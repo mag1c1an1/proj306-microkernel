@@ -17,7 +17,7 @@ pub mod kspace;
 mod offset;
 mod options;
 pub(crate) mod page_prop;
-pub(crate) mod page_table;
+pub mod page_table;
 mod space;
 
 use alloc::{borrow::ToOwned, vec::Vec};

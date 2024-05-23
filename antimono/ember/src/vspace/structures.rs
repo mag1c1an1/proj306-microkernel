@@ -54,12 +54,6 @@ pub struct pte_t {
     pub words: [usize; 1],
 }
 
-#[repr(C)]
-#[derive(Copy, Clone, Debug)]
-pub struct lookupPTSlot_ret_t {
-    pub ptSlot: *mut pte_t,
-    pub ptBitsLeft: usize,
-}
 
 // impl pte_t {
 //     #[inline]

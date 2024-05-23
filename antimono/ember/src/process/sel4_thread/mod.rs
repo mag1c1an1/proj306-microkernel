@@ -9,10 +9,7 @@ use anti_frame::{sync::Mutex, user::UserSpace};
 
 use super::Process;
 use crate::{
-    error::{Errno, Error},
-    sel4::seL4_BootInfo,
-    thread::{status::ThreadStatus, task, thread_table, Thread, Tid},
-    Result,
+    error::{Errno, Error}, sel4::boot::seL4_BootInfo, thread::{status::ThreadStatus, task, thread_table, Thread, Tid}, Result
 };
 
 pub mod sel4_thread_ext;

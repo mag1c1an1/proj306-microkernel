@@ -7,9 +7,8 @@ use anti_frame::{
 use super::SyscallReturn;
 use crate::{
     log_syscall_entry,
-    sel4::{seL4_BootInfo, SeL4Regs},
+    sel4::SeL4Regs,
     syscall::{SEL4_SET_TLS_BASE, SEL4_SYS_DEBUG_HALT, SEL4_SYS_DEBUG_PUT_CHAR},
-    tmp::rootserver,
     Result,
 };
 
@@ -35,8 +34,9 @@ pub fn sel4_kernel_putchar(user_context: &mut UserContext) -> Result<SyscallRetu
 
 /// use this to debug a syscall
 pub fn sel4_sys_debug_halt() -> Result<SyscallReturn> {
-    log_syscall_entry!(SEL4_SYS_DEBUG_HALT);
-    let info = unsafe { &*(rootserver.boot_info as *const seL4_BootInfo) };
-    early_println!("in syscall info: {:?}", info.extraLen);
-    Ok(SyscallReturn::Return(0))
+    todo!()
+    // log_syscall_entry!(SEL4_SYS_DEBUG_HALT);
+    // let info = unsafe { &*(rootserver.boot_info as *const seL4_BootInfo) };
+    // early_println!("in syscall info: {:?}", info.extraLen);
+    // Ok(SyscallReturn::Return(0))
 }

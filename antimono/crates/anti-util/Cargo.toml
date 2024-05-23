@@ -1,0 +1,16 @@
+[package]
+name = "anti-util"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anti-frame = { path = "../anti-frame" }
+pod = { git = "https://github.com/asterinas/pod", rev = "d7dba56" }
+typeflags-util = { path = "../typeflags-util" }
+anti-rights-proc = { path = "../anti-rights-proc" }
+anti-rights = { path = "../anti-rights" }
+inherit-methods-macro = { git = "https://github.com/asterinas/inherit-methods-macro", rev = "98f7e3e" }
+# ktest = { path = "../../../framework/libs/ktest" }
+[features]

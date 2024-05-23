@@ -1,18 +1,3 @@
-#![allow(non_upper_case_globals)]
-#![allow(non_snake_case)]
-#![allow(non_camel_case_types)]
-
-use core::fmt;
-mod bindings;
-pub use bindings::*;
-
-mod bitfield;
-pub use bitfield::*;
-
-
-
-pub(crate) type SeL4Bitfield<T, const N: usize> = Bitfield<[T; N], T>;
-
 #[repr(transparent)]
 #[derive(Clone, Eq, PartialEq)]
 pub struct seL4_MessageInfo(pub SeL4Bitfield<u64, 1usize>);
@@ -76,7 +61,7 @@ impl seL4_MessageInfo {
     }
     #[allow(dead_code)]
     pub const fn width_of_length() -> usize {
-        7usize
+        7usize - 0usize
     }
 }
 impl fmt::Debug for seL4_MessageInfo {
@@ -95,13 +80,14 @@ pub struct seL4_MessageInfo_Unpacked {
 }
 impl seL4_MessageInfo_Unpacked {
     pub fn pack(self) -> seL4_MessageInfo {
-        let Self {
+        match self {
+            Self {
                 label,
                 capsUnwrapped,
                 extraCaps,
                 length,
-            } = self;
-        seL4_MessageInfo::new(label, capsUnwrapped, extraCaps, length)
+            } => seL4_MessageInfo::new(label, capsUnwrapped, extraCaps, length),
+        }
     }
 }
 #[repr(transparent)]
@@ -172,7 +158,7 @@ impl seL4_CapRights {
     }
     #[allow(dead_code)]
     pub const fn width_of_capAllowWrite() -> usize {
-        1usize
+        1usize - 0usize
     }
 }
 impl fmt::Debug for seL4_CapRights {
@@ -191,18 +177,19 @@ pub struct seL4_CapRights_Unpacked {
 }
 impl seL4_CapRights_Unpacked {
     pub fn pack(self) -> seL4_CapRights {
-        let Self {
+        match self {
+            Self {
                 capAllowGrantReply,
                 capAllowGrant,
                 capAllowRead,
                 capAllowWrite,
-            } = self;
-        seL4_CapRights::new(
-            capAllowGrantReply,
-            capAllowGrant,
-            capAllowRead,
-            capAllowWrite,
-        )
+            } => seL4_CapRights::new(
+                capAllowGrantReply,
+                capAllowGrant,
+                capAllowRead,
+                capAllowWrite,
+            ),
+        }
     }
 }
 #[repr(transparent)]
@@ -242,7 +229,7 @@ impl seL4_CNode_CapData {
     }
     #[allow(dead_code)]
     pub const fn width_of_guardSize() -> usize {
-        6usize
+        6usize - 0usize
     }
 }
 impl fmt::Debug for seL4_CNode_CapData {
@@ -259,7 +246,8 @@ pub struct seL4_CNode_CapData_Unpacked {
 }
 impl seL4_CNode_CapData_Unpacked {
     pub fn pack(self) -> seL4_CNode_CapData {
-        let Self { guard, guardSize } = self;
-        seL4_CNode_CapData::new(guard, guardSize)
+        match self {
+            Self { guard, guardSize } => seL4_CNode_CapData::new(guard, guardSize),
+        }
     }
 }

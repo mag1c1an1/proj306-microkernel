@@ -18,12 +18,14 @@ use crate::{
         process_vm::{ProcessVm, USER_HEAP_BASE},
         program_loader::load_program_to_vm,
         Process,
-    }, sel4::{
-        seL4_BootInfo, seL4_SlotRegion, seL4_UntypedDesc, CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS,
-    }, thread::{Thread, Tid}, tmp::create_rootserver_vmo, vm::{
+    },
+    sel4::CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS,
+    thread::{Thread, Tid},
+    vm::{
         perms::VmPerms,
         vmo::{VmoOptions, VmoRightsOp},
-    }, Result
+    },
+    Result,
 };
 
 use super::{SeL4Thread, SeL4ThreadBuilder};
@@ -58,7 +60,9 @@ impl SeL4ThreadExt for Thread {
         let elf_load_info = load_program_to_vm(process_vm, elf_binary, argv, envp, is_root_server)?;
 
         // add sel4 root_server boot_info
-        let vmo = create_rootserver_vmo();
+        // TODO change this
+        // let vmo = create_rootserver_vmo();
+        let vmo = VmoOptions::<Rights>::new(4096).alloc()?;
         // let slot_region = seL4_SlotRegion { start: 0, end: 0 };
         // let info = seL4_BootInfo {
         //     extraLen: 10,
