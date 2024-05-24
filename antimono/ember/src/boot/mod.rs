@@ -45,15 +45,6 @@
 
 // pub static mut cpu_idle: [bool; CONFIG_MAX_NUM_NODES] = [false; CONFIG_MAX_NUM_NODES];
 
-// #[no_mangle]
-// #[link_section = ".boot.bss"]
-// pub static mut ndks_boot: ndks_boot_t = ndks_boot_t {
-//     reserved: [p_region_t { start: 0, end: 0 }; MAX_NUM_RESV_REG],
-//     resv_count: 0,
-//     freemem: [region_t { start: 0, end: 0 }; MAX_NUM_FREEMEM_REG],
-//     bi_frame: 0 as *mut seL4_BootInfo,
-//     slot_pos_cur: seL4_NumInitialCaps,
-// };
 
 // fn init_cpu() {
 //     #[cfg(feature = "ENABLE_UINTC")]

@@ -186,6 +186,15 @@ impl VmSpace {
             pt: self.pt.fork_copy_on_write(),
         }
     }
+
+    /// get page table's root frame phy addr
+    pub fn pt_root_paddr(&self) -> Paddr {
+        self.pt.root_paddr()
+    }
+
+    pub fn pt(&self) -> &PageTable<UserMode> {
+        &self.pt
+    }
 }
 
 impl Default for VmSpace {

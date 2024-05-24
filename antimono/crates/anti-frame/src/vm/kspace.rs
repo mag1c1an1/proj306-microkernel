@@ -16,7 +16,7 @@ use crate::arch::mm::{PageTableEntry, PagingConsts};
 
 /// The base address of the linear mapping of all physical
 /// memory in the kernel address space.
-pub(crate) const LINEAR_MAPPING_BASE_VADDR: Vaddr = 0xffff_8000_0000_0000;
+pub const LINEAR_MAPPING_BASE_VADDR: Vaddr = 0xffff_8000_0000_0000;
 
 /// The maximum size of the direct mapping of physical memory.
 ///
@@ -32,13 +32,13 @@ pub(crate) const LINEAR_MAPPING_BASE_VADDR: Vaddr = 0xffff_8000_0000_0000;
 /// high MMIO addresses usable (e.g., `0x7000_0000_7004` for VirtIO
 /// devices in the TDX environment) and leaves the last 1 TiB for other
 /// uses (e.g., the kernel code starting at [`kernel_loaded_offset()`]).
-pub(crate) const LINEAR_MAPPING_MAX_SIZE: usize = 127 << 40;
+pub const LINEAR_MAPPING_MAX_SIZE: usize = 127 << 40;
 
 /// The address range of the direct mapping of physical memory.
 ///
 /// This range is constructed based on [`PHYS_MEM_BASE_VADDR`] and
 /// [`PHYS_MEM_MAPPING_MAX_SIZE`].
-pub(crate) const LINEAR_MAPPING_VADDR_RANGE: Range<Vaddr> =
+pub const LINEAR_MAPPING_VADDR_RANGE: Range<Vaddr> =
     LINEAR_MAPPING_BASE_VADDR..(LINEAR_MAPPING_BASE_VADDR + LINEAR_MAPPING_MAX_SIZE);
 
 /// The kernel code is linear mapped to this address.

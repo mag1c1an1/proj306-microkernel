@@ -7,6 +7,6 @@ use anti_frame::prelude::*;
 #[aster_main]
 fn kernel_main() {
     ember::init();
-    ember::debug(); 
-    // ember::run_root_server();
+    // ember::debug(); 
+    ember::run_root_server();
 }

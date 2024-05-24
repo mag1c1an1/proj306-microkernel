@@ -1,4 +1,7 @@
-use anti_frame::cpu::GeneralRegs;
+use anti_frame::{
+    cpu::GeneralRegs,
+    vm::page_table::{PageTable, UserMode},
+};
 
 pub mod boot;
 pub mod common;
@@ -66,6 +69,11 @@ pub mod constants {
     pub const seL4_PageBits: usize = 12;
     pub const seL4_HugePageBits: usize = 30;
     pub const seL4_LargePageBits: usize = 21;
+
+    pub const PML4_INDEX_OFFSET: usize = 12 + 9 + 9 + 9;
+    pub const PDPT_INDEX_OFFSET: usize = 12 + 9 + 9;
+    pub const PD_INDEX_OFFSET: usize = 12 + 9;
+    pub const PT_INDEX_OFFSET: usize = 12;
 
     // ASID relevant
     pub const asidLowBits: usize = 9;
@@ -181,7 +189,9 @@ pub mod constants {
     pub const seL4_CapDomain: usize = 11;
     pub const seL4_CapSMMUSIDControl: usize = 12;
     pub const seL4_CapSMMUCBControl: usize = 13;
-    pub const seL4_NumInitialCaps: usize = 14;
+    pub const sel4_CapInitThreadSC: usize = 14;
+    pub const seL4_CapSMC: usize = 15;
+    pub const seL4_NumInitialCaps: usize = 16;
 
     pub const SIP_SSIP: usize = 1;
     pub const SIP_MSIP: usize = 3;
@@ -271,7 +281,12 @@ pub mod constants {
 pub use constants::*;
 use pod::Pod;
 
-use self::cspace::{cap_t, cte::cte_t};
+use crate::sel4::common::paddr_to_pptr;
+
+use self::{
+    boot::bootstrap::provide_cap,
+    cspace::{cap_t, cte::cte_t},
+};
 
 pub trait SeL4Regs {
     fn get_cap_reg(&self) -> usize;
@@ -295,5 +310,77 @@ impl SeL4Regs for GeneralRegs {
 
     fn set_tls(&mut self, tls: usize) {
         self.fsbase = tls;
+    }
+}
+
+pub trait SeL4PageTable {
+    /// generates page table related caps from a page table
+    fn provide_caps(&self, cap: &cap_t);
+}
+
+use anti_frame::vm::page_table::frame::Child;
+impl SeL4PageTable for PageTable<UserMode> {
+    // all the pt caps without pml4
+    fn provide_caps(&self, cap: &cap_t) {
+        unsafe {
+            let root_frame = self.frame();
+            for (idx, child) in root_frame.lock().childs().iter().enumerate() {
+                match child {
+                    Child::PageTable(node) => {
+                        // let vptr =  idx <<
+                        // create_it_pdpt_cap()
+                    }
+                    _ => panic!("wrong"),
+                }
+            }
+        }
+    }
+}
+
+/// generate page table related caps from a page table
+pub fn gen_caps_from_vm(pt: &PageTable<UserMode>, root_cnode_cap: &cap_t) {
+    unsafe {
+        // pml4
+        let root_frame = pt.frame();
+        for (idx, child) in root_frame.lock().childs().iter().enumerate() {
+            // child is pdpt
+            match child {
+                Child::PageTable(node) => {
+                    let pdpt_vptr = idx << PML4_INDEX_OFFSET;
+                    let base_pptr = paddr_to_pptr(node.lock().start_paddr());
+                    let pdpt_cap = cap_t::new_pdpt_cap(1, pdpt_vptr, IT_ASID, base_pptr);
+                    provide_cap(root_cnode_cap, pdpt_cap);
+                    for (idx, child) in node.lock().childs().iter().enumerate() {
+                        // child is pd
+                        match child {
+                            Child::PageTable(node) => {
+                                let pd_vptr = pdpt_vptr | (idx << PDPT_INDEX_OFFSET);
+                                let base_pptr = paddr_to_pptr(node.lock().start_paddr());
+                                let pd_cap =
+                                    cap_t::new_page_directory_cap(1, pd_vptr, IT_ASID, base_pptr);
+                                provide_cap(root_cnode_cap, pd_cap);
+                                for (idx, child) in node.lock().childs().iter().enumerate() {
+                                    // child is pt
+                                    match child {
+                                        Child::PageTable(node) => {
+                                            let pt_vptr = pd_vptr | (idx << PD_INDEX_OFFSET);
+                                            let base_pptr =
+                                                paddr_to_pptr(node.lock().start_paddr());
+                                            let pt_cap = cap_t::new_page_table_cap(
+                                                1, pt_vptr, IT_ASID, base_pptr,
+                                            );
+                                            provide_cap(root_cnode_cap, pt_cap);
+                                        }
+                                        _ => continue,
+                                    }
+                                }
+                            }
+                            _ => continue,
+                        }
+                    }
+                }
+                _ => continue,
+            }
+        }
     }
 }

@@ -15,7 +15,7 @@ use crate::{
     sync::SpinLock,
 };
 
-mod frame;
+pub mod frame;
 use frame::*;
 mod cursor;
 pub use cursor::{Cursor, CursorMut, PageTableQueryResult};
@@ -299,10 +299,7 @@ where
     ///
     /// If another cursor is already accessing the range, the new cursor will wait until the
     /// previous cursor is dropped.
-    pub fn cursor(
-        &'a self,
-        va: &Range<Vaddr>,
-    ) -> Result<Cursor<'a, M, E, C>, PageTableError> {
+    pub fn cursor(&'a self, va: &Range<Vaddr>) -> Result<Cursor<'a, M, E, C>, PageTableError> {
         Cursor::new(self, va)
     }
 
@@ -314,6 +311,10 @@ where
             root_frame: self.root_frame.clone(),
             _phantom: PhantomData,
         }
+    }
+
+    pub unsafe fn frame(&self) -> &PtfRef<E,C> {
+        &self.root_frame
     }
 }
 

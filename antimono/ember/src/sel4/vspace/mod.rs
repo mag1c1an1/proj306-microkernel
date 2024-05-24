@@ -1,6 +1,8 @@
 // x86 page table related
 #![allow(non_camel_case_types)]
 
+use crate::{BIT, ROUND_DOWN, ROUND_UP};
+use crate::sel4::common::v_region_t;
 use super::{cspace::cap_t, exception::exception_t};
 
 pub type pptr_t = usize; // kernel virtual address
@@ -81,9 +83,11 @@ impl vm_attributes_t {
 pub fn init_boot_pd() {
     todo!()
 }
+
 pub fn enable_paging() {
     todo!()
 }
+
 pub fn map_kernel_window(
     num_ioapic: u32,
     ioapic_paddrs: paddr_t,
@@ -92,6 +96,7 @@ pub fn map_kernel_window(
 ) -> bool {
     todo!()
 }
+
 // pub fn  map_skim_window(vptr_t skim_start, vptr_t skim_end)->bool{todo!()}
 pub fn map_kernel_window_devices(
     pt: *mut pte_t,
@@ -114,15 +119,19 @@ pub fn map_kernel_window_devices(
 pub fn get_boot_pd() -> *mut pde_t {
     todo!()
 }
+
 pub fn map_temp_boot_page(entry: usize, large_pages: u32) {
     todo!()
 }
+
 pub fn init_vm_state() -> bool {
     todo!()
 }
+
 pub fn init_dtrs() {
     todo!()
 }
+
 pub fn map_it_pt_cap(vspace_cap: cap_t, pt_cap: &cap_t) {
     todo!()
     // let vptr = _pt_cap.get_pt_mapped_address();
@@ -143,12 +152,15 @@ pub fn map_it_pt_cap(vspace_cap: cap_t, pt_cap: &cap_t) {
     //     1,
     // );
 }
+
 pub fn map_it_pd_cap(vspace_cap: cap_t, pd_cap: cap_t) {
     todo!()
 }
+
 pub fn map_it_frame_cap(pd_cap: cap_t, frame_cap: cap_t) {
     todo!()
 }
+
 pub fn map_it_pdpt_cap(vspace_cap: cap_t, pdpt_cap: cap_t) {}
 //  pub fn write_it_asid_pool(cap_t it_ap_cap, cap_t it_vspace_cap){todo!()}
 // pub fn init_pat_msr()->bool{todo!()}
@@ -160,4 +172,13 @@ pub fn is_vtable_root(cap: cap_t) -> bool {
 
 pub fn lookupPTSlot() -> lookupPTSlot_ret_t {
     todo!()
+}
+
+
+pub fn arch_get_n_paging() {}
+
+pub fn get_n_paging(v_reg: v_region_t, bits: usize) -> usize {
+    let start = ROUND_DOWN!(v_reg.start,bits);
+    let end = ROUND_UP!(v_reg.end,bits);
+    (end - start) / BIT!(bits)
 }

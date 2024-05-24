@@ -12,7 +12,7 @@ use crate::{
 /// It's also frequently referred to as a page table in many architectural documentations.
 /// Cloning a page table frame will create a deep copy of the page table.
 #[derive(Debug)]
-pub(super) struct PageTableFrame<E: PageTableEntryTrait, C: PagingConstsTrait>
+pub struct PageTableFrame<E: PageTableEntryTrait, C: PagingConstsTrait>
 where
     [(); nr_ptes_per_node::<C>()]:,
     [(); C::NR_LEVELS]:,
@@ -28,7 +28,7 @@ where
 pub(super) type PtfRef<E, C> = Arc<SpinLock<PageTableFrame<E, C>>>;
 
 #[derive(Debug)]
-pub(super) enum Child<E: PageTableEntryTrait, C: PagingConstsTrait>
+pub enum Child<E: PageTableEntryTrait, C: PagingConstsTrait>
 where
     [(); nr_ptes_per_node::<C>()]:,
     [(); C::NR_LEVELS]:,
@@ -45,7 +45,7 @@ where
     [(); nr_ptes_per_node::<C>()]:,
     [(); C::NR_LEVELS]:,
 {
-    pub(super) fn is_pt(&self) -> bool {
+    pub fn is_pt(&self) -> bool {
         matches!(self, Child::PageTable(_))
     }
     pub(super) fn is_frame(&self) -> bool {
@@ -54,7 +54,7 @@ where
     pub(super) fn is_none(&self) -> bool {
         matches!(self, Child::None)
     }
-    pub(super) fn is_some(&self) -> bool {
+    pub fn is_some(&self) -> bool {
         !self.is_none()
     }
     pub(super) fn is_untyped(&self) -> bool {
@@ -107,13 +107,17 @@ where
         }
     }
 
-    pub(super) fn start_paddr(&self) -> Paddr {
+    pub fn start_paddr(&self) -> Paddr {
         self.inner.start_paddr()
     }
 
     pub(super) fn child(&self, idx: usize) -> &Child<E, C> {
         debug_assert!(idx < nr_ptes_per_node::<C>());
         &self.children[idx]
+    }
+
+    pub unsafe fn childs(&self) -> &[Child<E, C>; nr_ptes_per_node::<C>()] {
+        self.children.as_ref()
     }
 
     /// The number of mapped frames or page tables.

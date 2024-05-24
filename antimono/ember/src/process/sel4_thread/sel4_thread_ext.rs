@@ -19,7 +19,7 @@ use crate::{
         program_loader::load_program_to_vm,
         Process,
     },
-    sel4::CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS,
+    sel4::{boot::bootstrap::init_rootserver, CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS},
     thread::{Thread, Tid},
     vm::{
         perms::VmPerms,
@@ -58,11 +58,10 @@ impl SeL4ThreadExt for Thread {
         process: Weak<Process>,
     ) -> Result<Arc<Self>> {
         let elf_load_info = load_program_to_vm(process_vm, elf_binary, argv, envp, is_root_server)?;
-
+        let vptr = init_rootserver(process_vm);
         // add sel4 root_server boot_info
         // TODO change this
         // let vmo = create_rootserver_vmo();
-        let vmo = VmoOptions::<Rights>::new(4096).alloc()?;
         // let slot_region = seL4_SlotRegion { start: 0, end: 0 };
         // let info = seL4_BootInfo {
         //     extraLen: 10,
@@ -86,15 +85,15 @@ impl SeL4ThreadExt for Thread {
         //         padding: [0; 6],
         //     }; CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS],
         // };
-        let root_vmar = process_vm.root_vmar();
-        let map_addr = root_vmar
-            .new_map(vmo, VmPerms::READ | VmPerms::WRITE)?
-            .build()?;
-        trace!("boot info vaddr 0x{:x}", map_addr);
+        // let root_vmar = process_vm.root_vmar();
+        // let map_addr = root_vmar
+        //     .new_map(vmo, VmPerms::READ | VmPerms::WRITE)?
+        //     .build()?;
+        trace!("boot info vaddr 0x{:x}", vptr);
         let mut cpu_ctx = UserContext::default();
         let vm_space = process_vm.root_vmar().vm_space().clone();
         cpu_ctx.set_rip(elf_load_info.entry_point() as _);
-        cpu_ctx.set_rdi(map_addr);
+        cpu_ctx.set_rdi(vptr);
         if let Some(statck_top) = elf_load_info.user_stack_top() {
             cpu_ctx.set_rsp(statck_top as _);
         }
@@ -104,4 +103,14 @@ impl SeL4ThreadExt for Thread {
             SeL4ThreadBuilder::new(tid, user_space, is_root_server).process(process);
         Ok(thread_builder.build())
     }
+}
+
+//
+fn init_initial_thread(
+    tid: Tid,
+    process_vm: &ProcessVm,
+    elf_binary: &[u8],
+    process: Weak<Process>,
+) {
+    // first compute the memory size
 }

@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
 
-use core::ffi::CStr;
+use core::{ffi::CStr, ops::Range};
 
-use alloc::{string::{String, ToString}, vec::Vec};
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use anti_frame::vm::Vaddr;
 /// A wrapper of xmas_elf's elf parsing
 use xmas_elf::{
@@ -10,7 +13,10 @@ use xmas_elf::{
     program::{self, ProgramHeader64},
 };
 
-use crate::{error::{Errno, Error}, return_errno_with_message, Result};
+use crate::{
+    error::{Errno, Error},
+    return_errno_with_message, Result,
+};
 pub struct Elf {
     pub elf_header: ElfHeader,
     pub program_headers: Vec<ProgramHeader64>,
@@ -119,6 +125,18 @@ impl Elf {
     pub fn base_load_address_offset(&self) -> u64 {
         let phdr = self.program_headers.first().unwrap();
         phdr.virtual_addr - phdr.offset
+    }
+
+    pub fn memory_bounds(&self) -> Range<u64> {
+        let mut start: u64 = 0x7fffffffffffffff;
+        let mut end: u64 = 0;
+        for header in &self.program_headers {
+            let sect_start = header.physical_addr;
+            let sect_end = sect_start + header.mem_size;
+            start = start.min(sect_start);
+            end = end.max(sect_end);
+        }
+        start..end
     }
 }
 

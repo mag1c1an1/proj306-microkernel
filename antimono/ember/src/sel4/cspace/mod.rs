@@ -205,6 +205,10 @@ impl cap_t {
             CapTag::CapFrameCap => self.get_frame_base_ptr(),
             // CapTag::CapPageTableCap => self.get_pt_base_ptr(),
             CapTag::CapASIDPoolCap => self.get_asid_pool(),
+            CapTag::CapPageTableCap => self.get_pt_base_ptr(),
+            CapTag::CapPageDirectoryCap => self.get_pd_base_ptr(),
+            CapTag::CapPDPTCap => self.get_pdpt_base_ptr(),
+            CapTag::CapPML4Cap => self.get_pml4_base_ptr(),
             _ => 0,
         }
     }
