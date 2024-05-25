@@ -1,6 +1,9 @@
 sel4_build_path := "../../proj306-microkernel-test/emberTest/build"
 obj-name := "emberTest-image-x86_64-pc99"
 
+kernel_path := "target/x86_64-unknown-none/debug/kernel"
+
+
 run: 
   cargo osdk run
 
@@ -20,3 +23,5 @@ copy-image:
   cd {{sel4_build_path}} && ninja
   cp {{sel4_build_path}}/images/{{obj-name}} images/root_task
   
+raw:
+  qemu-system-x86_64  -cpu Nehalem,-vme,-pdpe1gb,-xsave,-xsaveopt,-xsavec,-fsgsbase,-invpcid,+syscall,+lm,enforce -nographic -serial mon:stdio -m size=3G  -kernel {{kernel_path}} -initrd images/root_task
