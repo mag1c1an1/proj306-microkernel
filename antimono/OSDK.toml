@@ -9,7 +9,7 @@ protocol = "multiboot2"
 machine = "q35"
 args = [
     "--no-reboot",
-    "-m 2G",
+    "-m 3G",
     "-nographic",
     "-serial chardev:mux",
     "-monitor chardev:mux",

@@ -23,7 +23,7 @@ pub mod constants {
     pub const seL4_SlotBits: usize = 5;
     pub const seL4_ReplyBits: usize = 4;
     pub const seL4_MinUntypedBits: usize = 4;
-    pub const seL4_MaxUntypedBits: usize = 38;
+    pub const seL4_MaxUntypedBits: usize = 47;
     pub const seL4_CapRightsBits: usize = 4;
 
     // page table relevant

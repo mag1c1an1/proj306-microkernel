@@ -76,7 +76,7 @@ macro_rules! ROUND_UP {
 #[macro_export]
 macro_rules! IS_ALIGNED {
     ($n:expr,$b:expr) => {{
-        $n & MASK!($b) == 0
+        $n & crate::MASK!($b) == 0
     }};
 }
 
@@ -93,3 +93,10 @@ macro_rules! BIT {
     }
 
         }
+
+#[macro_export]
+macro_rules! MAX_FREE_INDEX {
+    ($e:expr) => {{
+        crate::BIT!($e - crate::sel4::seL4_MinUntypedBits)
+    }};
+}

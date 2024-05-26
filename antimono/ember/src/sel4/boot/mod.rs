@@ -202,9 +202,12 @@ pub struct tss_t {
 }
 
 pub mod bootstrap {
-    use core::{intrinsics::pref_align_of, mem};
+    use core::{
+        intrinsics::{pref_align_of, unaligned_volatile_load},
+        mem,
+    };
 
-    use alloc::sync::Arc;
+    use alloc::{boxed::Box, sync::Arc};
     use anti_frame::{
         boot::initramfs,
         vm::{kspace::paddr_to_vaddr, page_table::PageTable, HasPaddr, VmSpace},
@@ -215,18 +218,21 @@ pub mod bootstrap {
     use crate::{
         process::{process_vm::ProcessVm, program_loader::elf::elf_file::Elf},
         sel4::{
-            common::{p_region_t, paddr_to_pptr, region_t, v_region_t},
+            boot::seL4_UntypedDesc,
+            common::{p_region_t, paddr_to_pptr, pptr_to_paddr, region_t, v_region_t},
             cspace::{cap_t, cte::cte_t},
             gen_caps_from_vm, seL4_ASIDPoolBits, seL4_BootInfoFrameBits, seL4_CapBootInfoFrame,
-            seL4_CapInitThreadVspace, seL4_NumInitialCaps, seL4_PageBits, seL4_PageTableBits,
-            seL4_SlotBits, seL4_TCBBits, seL4_VSpaceBits, seL4_WordBits,
-            utils::write_slot,
-            vspace::{arch_get_n_paging, vptr_t},
-            wordBits, BI_FRAME_SIZE_BITS, CONFIG_ROOT_CNODE_SIZE_BITS, IT_ASID,
-            MAX_NUM_FREEMEM_REG, MAX_NUM_RESV_REG, PAGE_BITS,
+            seL4_CapInitThreadVspace, seL4_MaxUntypedBits, seL4_MinUntypedBits,
+            seL4_NumInitialCaps, seL4_PageBits, seL4_PageTableBits, seL4_SlotBits, seL4_TCBBits,
+            seL4_VSpaceBits, seL4_WordBits,
+            utils::{is_reg_empty, is_v_reg_empty, write_slot},
+            vspace::{arch_get_n_paging, pptr_t, vptr_t},
+            wordBits, BI_FRAME_SIZE_BITS, CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS,
+            CONFIG_ROOT_CNODE_SIZE_BITS, IT_ASID, MAX_NUM_FREEMEM_REG, MAX_NUM_RESV_REG, PAGE_BITS,
+            PAGE_SIZE,
         },
         vm::vmo::{Vmo, VmoFlags, VmoOptions},
-        BIT, ROUND_UP,
+        BIT, IS_ALIGNED, MAX_FREE_INDEX, ROUND_UP,
     };
     use crate::{
         sel4::{
@@ -238,7 +244,8 @@ pub mod bootstrap {
 
     use super::{
         acpi_rsdp_t, create_frames_of_region_ret_t, ndks_boot_t, rootserver_mem_t, seL4_BootInfo,
-        seL4_BootInfoHeader, seL4_SlotRegion, seL4_X86_BootInfo_fb_t, seL4_X86_BootInfo_mmap_t,
+        seL4_BootInfoHeader, seL4_SlotPos, seL4_SlotRegion, seL4_X86_BootInfo_fb_t,
+        seL4_X86_BootInfo_mmap_t,
     };
 
     const CONFIG_KERNEL_MCS: bool = false;
@@ -264,17 +271,27 @@ pub mod bootstrap {
         paging: region_t { start: 0, end: 0 },
     };
 
-    fn calculate_extra_bi_size_bits(size: usize) -> usize {
-        if size == 0 {
+    pub static mut root_untyped: Option<Box<Vmo>> = None;
+
+    fn calculate_extra_bi_size_bits(extra_size: usize) -> usize {
+        if extra_size == 0 {
             return 0;
         }
 
-        let clzl_ret = ROUND_UP!(size, seL4_PageBits).leading_zeros() as usize;
+        let clzl_ret = clzl(ROUND_UP!(extra_size, seL4_PageBits));
         let mut msb = seL4_WordBits - 1 - clzl_ret;
-        if size > BIT!(msb) {
+        if extra_size > BIT!(msb) {
             msb += 1;
         }
         return msb;
+    }
+
+    fn clzl(size: usize) -> usize {
+        size.leading_zeros() as usize
+    }
+
+    fn ctzl(size: usize) -> usize {
+        size.trailing_zeros() as usize
     }
 
     pub fn init_sys_state() {
@@ -302,10 +319,6 @@ pub mod bootstrap {
         //     p_reg.end
         // );
 
-        // ipcbuf start offset in a vmo
-        let ipcbuf_vptr_offset = 0;
-        // ipcbuf is one page
-        let bi_frame_vptr_offset = ipcbuf_vptr_offset + BIT!(PAGE_BITS);
         // boot info frame is one page
         let mut extra_bi_size = mem::size_of::<seL4_BootInfoHeader>();
 
@@ -397,8 +410,8 @@ pub mod bootstrap {
             /* we should have allocated all our memory */
             assert!(rootserver_mem.start == rootserver_mem.end);
 
-            let ipcbuf_vptr = start_vptr + ipcbuf_vptr_offset;
-            let bi_frame_vptr = start_vptr + bi_frame_vptr_offset;
+            let ipcbuf_vptr = start_vptr + (rootserver.ipc_buf - start_pptr);
+            let bi_frame_vptr = start_vptr + (rootserver.boot_info - start_pptr);
 
             let root_cnode_cap = create_root_cnode();
             // create io control port
@@ -487,28 +500,15 @@ pub mod bootstrap {
             // }
             // init_core_state(initial);
 
-            // #ifdef CONFIG_IOMMU
-            //     /* initialise VTD-related data structures and the IOMMUs */
-            //     if (!vtd_init(cpu_id, rmrr_list)) {
-            //         return false;
-            //     }
+            unsafe {
+                (*ndks_boot.bi_frame).numIOPTLevels = usize::MAX;
+            }
 
-            //     /* write number of IOMMU PT levels into bootinfo */
-            //     ndks_boot.bi_frame->numIOPTLevels = x86KSnumIOPTLevels;
+            // create all of the untypeds. Both devices and kernel window memory
+            create_untypeds(&root_cnode_cap);
 
-            //     /* write IOSpace master cap */
-            //     write_slot(SLOT_PTR(pptr_of_cap(root_cnode_cap), seL4_CapIOSpace), master_iospace_cap());
-            // #else
-            // ndks_boot.bi_frame->numIOPTLevels = -1;
-            // #endif
-
-            /* create all of the untypeds. Both devices and kernel window memory */
-            // if (!create_untypeds(root_cnode_cap)) {
-            //     return false;
-            // }
-
-            /* finalise the bootinfo frame */
-            // bi_finalise();
+            // finalise the bootinfo frame
+            bi_finalise();
             bi_frame_vptr
         }
     }
@@ -599,42 +599,6 @@ pub mod bootstrap {
         vspace_cap
     }
 
-    // fn init_bi_frame_cap(
-    //     root_cnode_cap: cap_t,
-    //     it_pd_cap: cap_t,
-    //     bi_frame_vptr: usize,
-    //     extra_bi_size: usize,
-    //     extra_bi_frame_vptr: usize,
-    // ) -> bool {
-    //     unsafe {
-    //         create_bi_frame_cap(&root_cnode_cap, &it_pd_cap, bi_frame_vptr);
-    //     }
-    //     if extra_bi_size > 0 {
-    //         let extra_bi_region = unsafe {
-    //             region_t {
-    //                 start: rootserver.extra_bi,
-    //                 end: rootserver.extra_bi + extra_bi_size,
-    //             }
-    //         };
-    //         let extra_bi_ret = rust_create_frames_of_region(
-    //             &root_cnode_cap,
-    //             &it_pd_cap,
-    //             extra_bi_region,
-    //             true,
-    //             pptr_to_paddr(extra_bi_region.start) as isize - extra_bi_frame_vptr as isize,
-    //         );
-
-    //         if !extra_bi_ret.success {
-    //             debug!("ERROR: mapping extra boot info to initial thread failed");
-    //             return false;
-    //         }
-    //         unsafe {
-    //             (*ndks_boot.bi_frame).extraBIPages = extra_bi_ret.region;
-    //         }
-    //     }
-    //     true
-    // }
-
     pub unsafe fn create_bi_frame_cap(root_cnode_cap: &cap_t, pd_cap: &cap_t, vptr: usize) {
         let cap =
             create_unmapped_it_frame_cap(pd_cap, rootserver.boot_info, vptr, IT_ASID, false, false);
@@ -679,7 +643,7 @@ pub mod bootstrap {
         bi.ipcBuffer = ipcbuf_vptr;
         bi.initThreadCNodeSizeBits = CONFIG_ROOT_CNODE_SIZE_BITS;
         // bi.initThreadDomain = ksDomSchedule[ksDomScheduleIdx].domain;
-        bi.initThreadDomain = 100000;
+        bi.initThreadDomain = 0;
         bi.extraLen = extra_bi_size;
 
         ndks_boot.bi_frame = bi as *const seL4_BootInfo as *mut seL4_BootInfo;
@@ -834,5 +798,144 @@ pub mod bootstrap {
         let ptr = root_cnode_cap.get_cap_ptr() as *mut cte_t;
         write_slot(ptr.add(ndks_boot.slot_pos_cur), cap);
         ndks_boot.slot_pos_cur += 1;
+    }
+
+    fn create_untypeds(root_cnode_cap: &cap_t) {
+        // allocate 40 * PAGES as untyped memory
+        let mem = VmoOptions::<Rights>::new(40 * PAGE_SIZE)
+            .flags(VmoFlags::CONTIGUOUS)
+            .alloc()
+            .unwrap();
+        let pptr = paddr_to_pptr(mem.paddr());
+        let first_untyped_slot = unsafe { ndks_boot.slot_pos_cur };
+        if !create_untypeds_for_region(
+            root_cnode_cap,
+            region_t {
+                start: pptr,
+                end: pptr + mem.size(),
+            },
+            first_untyped_slot,
+            false,
+        ) {
+            error!("creation of untypeds failed");
+            panic!("gg");
+        }
+        unsafe {
+            let bi = &mut (*ndks_boot.bi_frame);
+            bi.untyped = seL4_SlotRegion {
+                start: first_untyped_slot,
+                end: ndks_boot.slot_pos_cur,
+            };
+            root_untyped = Some(Box::new(mem));
+        }
+    }
+
+    fn create_untypeds_for_region(
+        root_cnode_cap: &cap_t,
+        mut reg: region_t,
+        first_untyped_slot: seL4_SlotPos,
+        is_device_memory: bool,
+    ) -> bool {
+        /*
+           This code works with regions that wrap (where end < start), because the
+           loop cuts up the region into size-aligned chunks, one for each cap. Memory
+           chunks that are size-aligned cannot themselves overflow, so they satisfy
+           alignment, size, and overflow conditions. The region [0..end) is not
+           necessarily part of the kernel window (depending on the value of
+           PPTR_BASE). This is fine for device untypeds. For normal untypeds, the
+           region is assumed to be fully in the kernel window. This is not checked
+           here.
+        */
+        while !is_reg_empty(&reg) {
+            /*
+               Calculate the bit size of the region. This is also correct for end < start:
+               it will return the correct size of the set [start..-1] union [0..end).
+               This will then be too large for alignment, so the code further
+               down will reduce the size.
+            */
+            let mut size_bits =
+                seL4_WordBits - 1 - clzl(unsafe { reg.end.unchecked_sub(reg.start) });
+            size_bits = size_bits.min(seL4_MaxUntypedBits);
+            /* The start address 0 satisfies any alignment needs, otherwise ensure
+             * the region's bit size does not exceed the alignment of the region.
+             */
+            if 0 != reg.start {
+                let align_bits = ctzl(reg.start);
+                if (size_bits > align_bits) {
+                    size_bits = align_bits;
+                }
+            }
+            /* Provide an untyped capability for the region only if it is large
+             * enough to be retyped into objects later. Otherwise the region can't
+             * be used anyway.
+             */
+            if (size_bits >= seL4_MinUntypedBits) {
+                if (!provide_untyped_cap(
+                    root_cnode_cap,
+                    is_device_memory,
+                    reg.start,
+                    size_bits,
+                    first_untyped_slot,
+                )) {
+                    return false;
+                }
+            }
+            reg.start = unsafe { reg.start.unchecked_add(BIT!(size_bits)) };
+        }
+        true
+    }
+
+    fn provide_untyped_cap(
+        root_cnode_cap: &cap_t,
+        is_device_memory: bool,
+        pptr: pptr_t,
+        size_bits: usize,
+        first_untyped_slot: seL4_SlotPos,
+    ) -> bool {
+        if size_bits > seL4_MaxUntypedBits || size_bits < seL4_MinUntypedBits {
+            error!("invaild size_bits");
+            return false;
+        }
+        // All cap ptrs must be aligned to object size
+        if !IS_ALIGNED!(pptr, size_bits) {
+            error!("unaligned untyped ponter");
+            return false;
+        }
+        // ignore device mem check
+        let i = unsafe { ndks_boot.slot_pos_cur } - first_untyped_slot;
+        if i < CONFIG_MAX_NUM_BOOTINFO_UNTYPED_CAPS {
+            unsafe {
+                let bi = &mut (*ndks_boot.bi_frame);
+                bi.untypedList[i] = seL4_UntypedDesc {
+                    paddr: pptr_to_paddr(pptr),
+                    sizeBits: size_bits as u8,
+                    isDevice: is_device_memory as u8,
+                    padding: [0; 6],
+                }
+            }
+            let ut_cap = cap_t::new_untyped_cap(
+                pptr,
+                MAX_FREE_INDEX!(size_bits),
+                is_device_memory as usize,
+                size_bits,
+            );
+            unsafe {
+                provide_cap(root_cnode_cap, ut_cap);
+            }
+            true
+        } else {
+            error!("too many untyped caps");
+            true
+        }
+    }
+
+    fn bi_finalise() {
+        unsafe {
+            let x = &mut *ndks_boot.bi_frame;
+            x.empty = seL4_SlotRegion {
+                start: ndks_boot.slot_pos_cur,
+                end: BIT!(CONFIG_ROOT_CNODE_SIZE_BITS),
+            }
+        }
     }
 }

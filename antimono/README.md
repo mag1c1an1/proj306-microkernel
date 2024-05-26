@@ -146,3 +146,7 @@ features = ["spin_no_std"]
 
 [features]
 intel_tdx = ["dep:tdx-guest"]
+
+
+
+syscall_return

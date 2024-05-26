@@ -342,8 +342,9 @@ pub fn syscall_dispatch(
         SEL4_SET_TLS_BASE => syscall_handler!(0, sel4_set_tls_base, context),
         SEL4_SYS_DEBUG_PUT_CHAR => syscall_handler!(0, sel4_kernel_putchar, context),
         SEL4_SYS_DEBUG_HALT => syscall_handler!(0, sel4_sys_debug_halt),
+        // SEL4_SYS_DEBUG_NAME_THREAD => syscall_handler!(1, sel4_sys_debug_name_thread),
         _ => {
-            warn!("Unimplemented syscall number: {}", syscall_number);
+            error!("Unimplemented syscall number: {}", syscall_number);
             return_errno_with_message!(Errno::ENOSYS, "Unimplemented syscall");
         }
     }

@@ -1,7 +1,11 @@
 use anti_frame::vm::kspace::paddr_to_vaddr;
 
-use crate::{sel4::CONFIG_ROOT_CNODE_SIZE_BITS, BIT, ROUND_DOWN, ROUND_UP};
+use crate::{
+    sel4::{seL4_MinUntypedBits, CONFIG_ROOT_CNODE_SIZE_BITS},
+    BIT, ROUND_DOWN, ROUND_UP,
+};
 
+#[macro_use]
 pub mod macros;
 
 use super::{
@@ -12,10 +16,9 @@ use super::{
     CONFIG_PT_LEVELS, PADDR_TOP, PPTR_BASE, PPTR_TOP,
 };
 
-pub fn MAX_FREE_INDEX(bits: usize) -> usize {
-    // BIT!(bits - seL4_MinUntypedBits)
-    todo!()
-}
+// pub fn MAX_FREE_INDEX(bits: usize) -> usize {
+//     BIT!(bits - seL4_MinUntypedBits)
+// }
 
 #[inline]
 pub fn convert_to_type_ref<T>(addr: usize) -> &'static T {
@@ -73,6 +76,9 @@ pub fn cpu_id() -> usize {
 }
 
 pub fn is_reg_empty(reg: &region_t) -> bool {
+    reg.start == reg.end
+}
+pub fn is_v_reg_empty(reg: &v_region_t) -> bool {
     reg.start == reg.end
 }
 

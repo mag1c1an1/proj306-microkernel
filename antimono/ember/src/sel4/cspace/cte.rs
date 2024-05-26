@@ -7,13 +7,10 @@ use crate::{
     sel4::{
         cspace::is_cap_revocable,
         exception::exception_t,
-        utils::{
-            convert_to_mut_type_ref, convert_to_option_mut_type_ref, convert_to_type_ref,
-            MAX_FREE_INDEX,
-        },
+        utils::{convert_to_mut_type_ref, convert_to_option_mut_type_ref, convert_to_type_ref},
         wordRadix,
     },
-    MASK,
+    MASK, MAX_FREE_INDEX,
 };
 
 use super::{
@@ -486,7 +483,7 @@ fn setUntypedCapAsFull(srcCap: &cap_t, newCap: &cap_t, srcSlot: &mut cte_t) {
         {
             srcSlot
                 .cap
-                .set_untyped_free_index(MAX_FREE_INDEX(srcCap.get_untyped_block_size()));
+                .set_untyped_free_index(MAX_FREE_INDEX!(srcCap.get_untyped_block_size()));
         }
     }
 }
