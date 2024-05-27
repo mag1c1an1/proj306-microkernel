@@ -1,12 +1,9 @@
 #![no_std]
-// #![forbid(unsafe_code)]
+#![forbid(unsafe_code)]
 
-extern crate alloc;
-use anti_frame::prelude::*;
+use aster_frame::prelude::*;
 
 #[aster_main]
 fn kernel_main() {
-    ember::init();
-    // ember::debug(); 
-    ember::run_root_server();
+    println!("Hello world from guest kernel!");
 }

@@ -23,3 +23,5 @@ copy-image:
   cd {{sel4_build_path}} && ninja
   cp {{sel4_build_path}}/images/{{obj-name}} images/root_task
   
+raw:
+  qemu-system-x86_64  -cpu Nehalem,-vme,-pdpe1gb,-xsave,-xsaveopt,-xsavec,-fsgsbase,-invpcid,+syscall,+lm,enforce -nographic -serial mon:stdio -m size=3G  -kernel {{kernel_path}} -initrd images/root_task

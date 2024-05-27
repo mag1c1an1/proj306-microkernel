@@ -3,36 +3,14 @@ name = "antimono"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-ember = { path = "ember" }
-log = "0.4"
-anti-frame = { path = "crates/anti-frame" }
+[dependencies.aster-frame]
+git = "https://github.com/asterinas/asterinas"
+rev = "c9b66bd"
+
+[dependencies.ktest]
+git = "https://github.com/asterinas/asterinas"
+rev = "c9b66bd"
 
 [workspace]
-resolver = "2"
-members = [
-  "crates/anti-frame",
-  "crates/anti-main",
-  "crates/anti-rights",
-  "crates/anti-rights-proc",
-  "crates/align-ext",
-  "crates/anti-util",
-  "crates/id-alloc",
-  "crates/int-to-c-enum",
-  "crates/typeflags",
-  "crates/typeflags-util",
-  #  "crates/sel4",
-  #  "crates/sel4-rustfmt-helper",
-  #  "crates/sel4/bitfield-ops",
-  #  "crates/sel4/bitfield-parser",
-  #  "crates/sel4/bitfield-parser/test",
-  #  "crates/sel4/build-env",
-  #  "crates/sel4/config",
-  #  "crates/sel4/config/data",
-  #  "crates/sel4/config/generic",
-  #  "crates/sel4/config/generic/types",
-  #  "crates/sel4/config/macros",
-  #  "crates/sel4/sys",
-  "ember",
-]
 exclude = ["target/osdk/base"]
+members = ["ember"]
