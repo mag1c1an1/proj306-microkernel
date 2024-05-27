@@ -1,0 +1,15 @@
+[package]
+name = "ember"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.aster-frame]
+git = "https://github.com/asterinas/asterinas"
+rev = "c9b66bd"
+
+[dependencies.ktest]
+git = "https://github.com/asterinas/asterinas"
+rev = "c9b66bd"
+
+[workspace]
+exclude = ["target/osdk/base"]
