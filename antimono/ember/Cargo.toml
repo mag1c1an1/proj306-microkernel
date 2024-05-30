@@ -6,3 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+aster-frame = { path = "../../asterinas/framework/aster-frame" }
+ktest = { path = "../../asterinas/framework/libs/ktest" }
+log = "0.4"
+sel4 = { path = "../crates/sel4" }

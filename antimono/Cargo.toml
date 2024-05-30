@@ -3,14 +3,21 @@ name = "antimono"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies.aster-frame]
-git = "https://github.com/asterinas/asterinas"
-rev = "c9b66bd"
+# [dependencies.aster-frame]
+# git = "https://github.com/asterinas/asterinas"
+# rev = "c9b66bd"
 
-[dependencies.ktest]
-git = "https://github.com/asterinas/asterinas"
-rev = "c9b66bd"
+# [dependencies.ktest]
+# git = "https://github.com/asterinas/asterinas"
+# rev = "c9b66bd"
+
+[dependencies]
+aster-frame = { path = "../asterinas/framework/aster-frame" }
+ktest = { path = "../asterinas/framework/libs/ktest" }
+log = "0.4"
+ember = { path = "ember" }
+
 
 [workspace]
+members = ["ember", "crates/sel4", "crates/sel4-rustfmt-helper", "usertest"]
 exclude = ["target/osdk/base"]
-members = ["ember"]

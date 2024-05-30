@@ -27,6 +27,7 @@
       <sourceFolder url="file://$MODULE_DIR$/antimono/crates/typeflags/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/antimono/ember/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/antimono/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/usertest/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/antimono/target" />
     </content>
     <orderEntry type="inheritedJdk" />

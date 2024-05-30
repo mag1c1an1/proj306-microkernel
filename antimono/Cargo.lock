@@ -16,7 +16,6 @@ dependencies = [
 [[package]]
 name = "align_ext"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
 
 [[package]]
 name = "aml"
@@ -36,13 +35,14 @@ name = "antimono"
 version = "0.1.0"
 dependencies = [
  "aster-frame",
+ "ember",
  "ktest",
+ "log",
 ]
 
 [[package]]
 name = "aster-frame"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
 dependencies = [
  "acpi",
  "align_ext",
@@ -78,7 +78,6 @@ dependencies = [
 [[package]]
 name = "aster-main"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -189,8 +188,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "either"
+version = "1.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3dca9240753cf90908d7e4aac30f630662b02aebaa1b58a3cadabdb23385b58b"
+
+[[package]]
 name = "ember"
 version = "0.1.0"
+dependencies = [
+ "aster-frame",
+ "ktest",
+ "log",
+ "sel4",
+]
+
+[[package]]
+name = "errno"
+version = "0.3.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "534c5cf6194dfab3db3242765c03bbe257cf92f22b38f6bc0c58d59108a820ba"
+dependencies = [
+ "libc",
+ "windows-sys",
+]
+
+[[package]]
+name = "fallible-iterator"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4443176a9f2c162692bd3d352d745ef9413eec5782a80d8fd6f8a1ac692a07f7"
 
 [[package]]
 name = "fnv"
@@ -222,9 +249,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
 
 [[package]]
+name = "home"
+version = "0.5.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5"
+dependencies = [
+ "windows-sys",
+]
+
+[[package]]
 name = "id-alloc"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
 dependencies = [
  "bitvec",
 ]
@@ -249,7 +284,6 @@ dependencies = [
 [[package]]
 name = "int-to-c-enum"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
 dependencies = [
  "int-to-c-enum-derive",
 ]
@@ -257,7 +291,6 @@ dependencies = [
 [[package]]
 name = "int-to-c-enum-derive"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -274,9 +307,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "itoa"
+version = "1.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
+
+[[package]]
 name = "ktest"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
 dependencies = [
  "ktest-proc-macro",
  "owo-colors",
@@ -285,7 +323,6 @@ dependencies = [
 [[package]]
 name = "ktest-proc-macro"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -311,7 +348,12 @@ checksum = "97b3888a4aecf77e811145cadf6eef5901f4782c53886191b2f693f24761847c"
 [[package]]
 name = "linux-boot-params"
 version = "0.1.0"
-source = "git+https://github.com/asterinas/asterinas?rev=c9b66bd#c9b66bddd6b77dcddcbe1b66337a76ee1e16b640"
+
+[[package]]
+name = "linux-raw-sys"
+version = "0.4.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78b3ae25bc7c8c38cec158d1f2757ee79e9b3740fbc7ccf0e59e4b08d793fa89"
 
 [[package]]
 name = "lock_api"
@@ -350,6 +392,12 @@ dependencies = [
  "ptr_meta",
  "uefi-raw",
 ]
+
+[[package]]
+name = "once_cell"
+version = "1.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
 name = "owo-colors"
@@ -474,16 +522,140 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustix"
+version = "0.38.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70dc5ec042f7a43c4a73241207cecc9873a06d45debb38b329f8541d85c2730f"
+dependencies = [
+ "bitflags 2.5.0",
+ "errno",
+ "libc",
+ "linux-raw-sys",
+ "windows-sys",
+]
+
+[[package]]
 name = "rustversion"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "955d28af4278de8121b7ebeb796b6a45735dc01436d898801014aced2773a3d6"
 
 [[package]]
+name = "ryu"
+version = "1.0.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
+
+[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
+name = "sel4"
+version = "0.1.0"
+dependencies = [
+ "cfg-if",
+ "sel4-config",
+ "sel4-sys",
+]
+
+[[package]]
+name = "sel4-bitfield-ops"
+version = "0.1.0"
+
+[[package]]
+name = "sel4-config"
+version = "0.1.0"
+dependencies = [
+ "sel4-config-data",
+ "sel4-config-generic",
+ "sel4-config-macros",
+ "sel4-rustfmt-helper",
+]
+
+[[package]]
+name = "sel4-config-data"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "sel4-config-generic-types",
+ "serde_json",
+]
+
+[[package]]
+name = "sel4-config-generic"
+version = "0.1.0"
+dependencies = [
+ "fallible-iterator",
+ "proc-macro2",
+ "quote",
+ "sel4-config-generic-types",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "sel4-config-generic-types"
+version = "0.1.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "sel4-config-macros"
+version = "0.1.0"
+dependencies = [
+ "sel4-config-data",
+ "sel4-config-generic",
+]
+
+[[package]]
+name = "sel4-rustfmt-helper"
+version = "0.1.0"
+dependencies = [
+ "which",
+]
+
+[[package]]
+name = "sel4-sys"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "sel4-bitfield-ops",
+ "sel4-config",
+]
+
+[[package]]
+name = "serde"
+version = "1.0.203"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7253ab4de971e72fb7be983802300c30b5a7f0c2e56fab8abfc6a214307c0094"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.203"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "500cbc0ebeb6f46627f50f3f5811ccf6bf00643be300b4c3eabc0ef55dc5b5ba"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.66",
+]
+
+[[package]]
+name = "serde_json"
+version = "1.0.117"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "455182ea6142b14f93f4bc5320a2b31c1f266b66a4a5c858b013302a5d8cbfc3"
+dependencies = [
+ "itoa",
+ "ryu",
+ "serde",
+]
 
 [[package]]
 name = "smallvec"
@@ -599,6 +771,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "usertest"
+version = "0.1.0"
+
+[[package]]
 name = "volatile"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -609,6 +785,91 @@ name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+
+[[package]]
+name = "which"
+version = "4.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87ba24419a2078cd2b0f2ede2691b6c66d8e47836da3b6db8265ebad47afbfc7"
+dependencies = [
+ "either",
+ "home",
+ "once_cell",
+ "rustix",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.52.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
+dependencies = [
+ "windows-targets",
+]
+
+[[package]]
+name = "windows-targets"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f0713a46559409d202e70e28227288446bf7841d3211583a4b53e3f6d96e7eb"
+dependencies = [
+ "windows_aarch64_gnullvm",
+ "windows_aarch64_msvc",
+ "windows_i686_gnu",
+ "windows_i686_gnullvm",
+ "windows_i686_msvc",
+ "windows_x86_64_gnu",
+ "windows_x86_64_gnullvm",
+ "windows_x86_64_msvc",
+]
+
+[[package]]
+name = "windows_aarch64_gnullvm"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7088eed71e8b8dda258ecc8bac5fb1153c5cffaf2578fc8ff5d61e23578d3263"
+
+[[package]]
+name = "windows_aarch64_msvc"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9985fd1504e250c615ca5f281c3f7a6da76213ebd5ccc9561496568a2752afb6"
+
+[[package]]
+name = "windows_i686_gnu"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88ba073cf16d5372720ec942a8ccbf61626074c6d4dd2e745299726ce8b89670"
+
+[[package]]
+name = "windows_i686_gnullvm"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87f4261229030a858f36b459e748ae97545d6f1ec60e5e0d6a3d32e0dc232ee9"
+
+[[package]]
+name = "windows_i686_msvc"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db3c2bf3d13d5b658be73463284eaf12830ac9a26a90c717b7f771dfe97487bf"
+
+[[package]]
+name = "windows_x86_64_gnu"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e4246f76bdeff09eb48875a0fd3e2af6aada79d409d33011886d3e1581517d9"
+
+[[package]]
+name = "windows_x86_64_gnullvm"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "852298e482cd67c356ddd9570386e2862b5673c85bd5f88df9ab6802b334c596"
+
+[[package]]
+name = "windows_x86_64_msvc"
+version = "0.52.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bec47e5bfd1bff0eeaf6d8b485cc1074891a197ab4225d504cb7a1ab88b02bf0"
 
 [[package]]
 name = "wyz"
