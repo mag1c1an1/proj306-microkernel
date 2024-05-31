@@ -1,7 +1,5 @@
 mod sched;
 
-
-
 pub struct Thread {
     // inner: sel4:
 }

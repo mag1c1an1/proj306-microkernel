@@ -33,13 +33,13 @@ pub fn decode_irq_control_invocation(label: MessageLabel, length: usize, src_slo
         }
         let lu_ret = lookupSlotForCNodeOp(false, &cnode_cap, index, depth);
         if lu_ret.status != exception_t::EXCEPTION_NONE {
-            debug!("Target slot for new IRQ Handler cap invalid: IRQ {}.", irq);
+            debug!("Target slot for new IRQ Handler capability invalid: IRQ {}.", irq);
             return lu_ret.status;
         }
         let dest_slot = convert_to_mut_type_ref::<cte_t>(lu_ret.slot as usize);
         if dest_slot.cap.get_cap_type() != CapTag::CapNullCap {
             unsafe { current_syscall_error._type = seL4_DeleteFirst; }
-            debug!("Target slot for new IRQ Handler cap not empty");
+            debug!("Target slot for new IRQ Handler capability not empty");
             return exception_t::EXCEPTION_SYSCALL_ERROR;
         }
         set_thread_state(get_currenct_thread(), ThreadState::ThreadStateRestart);
@@ -112,7 +112,7 @@ fn arch_decode_irq_control_invocation(label: MessageLabel, length: usize, src_sl
         }
         let lu_ret = lookupSlotForCNodeOp(false, &cnode_cap, index, depth);
         if lu_ret.status != exception_t::EXCEPTION_NONE {
-            debug!("Target slot for new IRQ Handler cap invalid: IRQ {}.", irq);
+            debug!("Target slot for new IRQ Handler capability invalid: IRQ {}.", irq);
             return lu_ret.status;
         }
         set_thread_state(get_currenct_thread(), ThreadState::ThreadStateRestart);

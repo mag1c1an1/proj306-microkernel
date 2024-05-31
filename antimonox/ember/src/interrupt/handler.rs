@@ -64,7 +64,7 @@ pub fn handleInterrupt(irq: usize) {
     //     IRQState::IRQSignal => unsafe {
     //         // debug!("IRQSignal");
     //         let handler_slot = get_irq_handler_slot(irq);
-    //         let handler_cap = &handler_slot.cap;
+    //         let handler_cap = &handler_slot.capability;
     //         if handler_cap.get_cap_type() == CapTag::CapNotificationCap
     //             && handler_cap.get_nf_can_send() != 0 {
     //             send_net_uintr();

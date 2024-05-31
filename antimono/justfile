@@ -5,10 +5,13 @@ kernel_path := "target/x86_64-unknown-none/debug/kernel"
 
 
 run: 
-  cargo osdk run
+  cargo osdk run --target-arch x86_64
+
+ktest:
+    cd ember && cargo osdk test --target-arch x86_64
 
 build: 
-  cargo osdk build
+  cargo osdk build --target-arch x86_64
 
 asm-kernel:
   rust-objdump -d target/x86_64-unknown-none/debug/antimono-osdk-bin > asm/kernel.asm

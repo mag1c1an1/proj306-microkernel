@@ -120,7 +120,7 @@ plus_define_bitfield! {
     }
 }
 
-/// cap 的公用方法
+/// capability 的公用方法
 impl cap_t {
     pub fn update_data(&self, preserve: bool, new_data: usize) -> Self {
         if self.isArchCap() {

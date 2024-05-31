@@ -20,7 +20,7 @@ pub const LINEAR_MAPPING_BASE_VADDR: Vaddr = 0xffff_8000_0000_0000;
 
 /// The maximum size of the direct mapping of physical memory.
 ///
-/// This size acts as a cap. If the actual memory size exceeds this value,
+/// This size acts as a capability. If the actual memory size exceeds this value,
 /// the remaining memory cannot be included in the direct mapping because
 /// the maximum size of the direct mapping is limited by this value. On
 /// the other hand, if the actual memory size is smaller, the direct

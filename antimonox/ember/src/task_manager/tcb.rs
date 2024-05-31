@@ -287,7 +287,7 @@ impl tcb_t {
 
 
     pub fn set_vm_root(&self) -> Result<(), lookup_fault_t> {
-        // let threadRoot = &(*getCSpace(thread as usize, tcbVTable)).cap;
+        // let threadRoot = &(*getCSpace(thread as usize, tcbVTable)).capability;
         let thread_root = self.get_cspace(tcbVTable).cap;
         set_vm_root(&thread_root)
     }

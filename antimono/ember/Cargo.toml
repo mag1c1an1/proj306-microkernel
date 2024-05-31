@@ -10,3 +10,7 @@ aster-frame = { path = "../../asterinas/framework/aster-frame" }
 ktest = { path = "../../asterinas/framework/libs/ktest" }
 log = "0.4"
 sel4 = { path = "../crates/sel4" }
+sel4-bitfield-ops = { path = "../crates/sel4/bitfield-ops" }
+intrusive-collections = "0.9"
+num_enum = { version = "0.7", default-features = false }
+thiserror = { version = "1.0", package = "thiserror-core", default-features = false }

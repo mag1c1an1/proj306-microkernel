@@ -67,7 +67,7 @@ pub fn finaliseCap(cap: &cap_t, _final: bool, _exposed: bool) -> finaliseCap_ret
     match cap.get_cap_type() {
         CapTag::CapEndpointCap => {
             if _final {
-                // cancelAllIPC(cap.get_ep_ptr() as *mut endpoint_t);
+                // cancelAllIPC(capability.get_ep_ptr() as *mut endpoint_t);
                 convert_to_mut_type_ref::<endpoint_t>(cap.get_ep_ptr()).cancel_all_ipc()
             }
             fc_ret.remainder = cap_t::new_null_cap();

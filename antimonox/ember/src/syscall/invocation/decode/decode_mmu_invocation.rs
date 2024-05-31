@@ -253,7 +253,7 @@ fn decode_frame_map(length: usize, frame_slot: &mut cte_t, buffer: Option<&seL4_
 
 fn decode_page_table_unmap(pt_cte: &mut cte_t) -> exception_t {
     if !pt_cte.is_final_cap() {
-        debug!("RISCVPageTableUnmap: cannot unmap if more than once cap exists");
+        debug!("RISCVPageTableUnmap: cannot unmap if more than once capability exists");
         unsafe { current_syscall_error._type = seL4_RevokeFirst; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }

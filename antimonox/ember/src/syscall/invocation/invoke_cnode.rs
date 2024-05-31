@@ -11,11 +11,11 @@ pub fn invoke_cnode_copy(src_slot: &mut cte_t, dest_slot: &mut cte_t, cap_right:
     let src_cap = mask_cap_rights(cap_right, &src_slot.cap);
     let dc_ret = src_slot.derive_cap(&src_cap);
     if dc_ret.status != exception_t::EXCEPTION_NONE {
-        debug!("Error deriving cap for CNode Copy operation.");
+        debug!("Error deriving capability for CNode Copy operation.");
         return dc_ret.status;
     }
     if dc_ret.cap.get_cap_type() == CapTag::CapNullCap {
-        debug!("CNode Copy:Copy cap would be invalid.");
+        debug!("CNode Copy:Copy capability would be invalid.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
@@ -31,11 +31,11 @@ pub fn invoke_cnode_mint(src_slot: &mut cte_t, dest_slot: &mut cte_t, cap_right:
     let new_cap = src_cap.update_data(false, cap_data);
     let dc_ret = src_slot.derive_cap(&new_cap);
     if dc_ret.status != exception_t::EXCEPTION_NONE {
-        debug!("Error deriving cap for CNode Copy operation.");
+        debug!("Error deriving capability for CNode Copy operation.");
         return dc_ret.status;
     }
     if dc_ret.cap.get_cap_type() == CapTag::CapNullCap {
-        debug!("CNode Mint:Mint cap would be invalid.");
+        debug!("CNode Mint:Mint capability would be invalid.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
@@ -49,7 +49,7 @@ pub fn invoke_cnode_mint(src_slot: &mut cte_t, dest_slot: &mut cte_t, cap_right:
 pub fn invoke_cnode_mutate(src_slot: &mut cte_t, dest_slot: &mut cte_t, cap_data: usize) -> exception_t {
     let new_cap = src_slot.cap.update_data(true, cap_data);
     if new_cap.get_cap_type() == CapTag::CapNullCap {
-        debug!("CNode Mint:Mint cap would be invalid.");
+        debug!("CNode Mint:Mint capability would be invalid.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
@@ -69,7 +69,7 @@ pub fn invoke_cnode_save_caller(dest_slot: &mut cte_t) -> exception_t {
     let src_slot = get_currenct_thread().get_cspace_mut_ref(tcbCaller);
     let cap = src_slot.cap;
     match cap.get_cap_type() {
-        CapTag::CapNullCap => debug!("CNode SaveCaller: Reply cap not present."),
+        CapTag::CapNullCap => debug!("CNode SaveCaller: Reply capability not present."),
         CapTag::CapReplyCap => {
             if cap.get_reply_master() == 0 {
                 cte_move(&cap, src_slot, dest_slot);
@@ -87,13 +87,13 @@ pub fn invoke_cnode_rotate(slot1: &mut cte_t, slot2: &mut cte_t, slot3: &mut cte
     let new_pivot_cap = slot2.cap.update_data(true, pivot_new_data);
 
     if new_src_cap.get_cap_type() == CapTag::CapNullCap {
-        debug!("CNode Rotate: Source cap invalid");
+        debug!("CNode Rotate: Source capability invalid");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
 
     if new_pivot_cap.get_cap_type() == CapTag::CapNullCap {
-        debug!("CNode Rotate: Pivot cap invalid");
+        debug!("CNode Rotate: Pivot capability invalid");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
@@ -115,7 +115,7 @@ pub fn invoke_cnode_rotate(slot1: &mut cte_t, slot2: &mut cte_t, slot3: &mut cte
 pub fn invoke_cnode_move(src_slot: &mut cte_t, dest_slot: &mut cte_t) -> exception_t {
     let src_cap = src_slot.cap;
     if src_cap.get_cap_type() == CapTag::CapNullCap {
-        debug!("CNode Copy/Mint/Move/Mutate: Mutated cap would be invalid.");
+        debug!("CNode Copy/Mint/Move/Mutate: Mutated capability would be invalid.");
         unsafe {
             current_syscall_error._type = seL4_IllegalOperation;
         }
@@ -130,7 +130,7 @@ pub fn invoke_cnode_move(src_slot: &mut cte_t, dest_slot: &mut cte_t) -> excepti
 pub fn invoke_cnode_cancel_badged_sends(dest_slot: &mut cte_t) -> exception_t {
     let dest_cap: cap_t = dest_slot.cap;
     if !hasCancelSendRight(&dest_cap) {
-        debug!("CNode CancelBadgedSends: Target cap invalid.");
+        debug!("CNode CancelBadgedSends: Target capability invalid.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }

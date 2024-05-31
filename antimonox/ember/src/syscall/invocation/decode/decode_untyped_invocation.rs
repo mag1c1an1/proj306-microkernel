@@ -13,7 +13,7 @@ use crate::syscall::{alignUp, FREE_INDEX_TO_OFFSET, GET_FREE_REF};
 
 pub fn decode_untyed_invocation(inv_label: MessageLabel, length: usize, slot: &mut cte_t, cap: &cap_t, buffer: Option<&seL4_IPCBuffer>) -> exception_t {
     if inv_label != MessageLabel::UntypedRetype {
-        debug!("Untyped cap: Illegal operation attempted.");
+        debug!("Untyped capability: Illegal operation attempted.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
@@ -145,7 +145,7 @@ pub fn get_target_cnode(node_index: usize, node_depth: usize, node_cap: &mut cap
     };
 
     if target_node_cap.get_cap_type() != CapTag::CapCNodeCap {
-        debug!("Untyped Retype: Destination cap invalid or read-only.");
+        debug!("Untyped Retype: Destination capability invalid or read-only.");
         unsafe {
             current_syscall_error._type = seL4_FailedLookup;
             current_syscall_error.failedLookupWasSource = 0;

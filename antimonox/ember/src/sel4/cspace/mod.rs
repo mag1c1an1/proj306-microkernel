@@ -147,7 +147,7 @@ plus_define_bitfield! {
     }
 }
 
-/// cap 的公用方法
+/// capability 的公用方法
 impl cap_t {
     pub fn update_data(&self, preserve: bool, new_data: usize) -> Self {
         if self.isArchCap() {
@@ -245,7 +245,7 @@ impl cap_t {
     }
 }
 
-// vm related cap
+// vm related capability
 impl cap_t {
     #[inline]
     pub fn new_page_table_cap(
@@ -642,14 +642,14 @@ pub fn is_cap_revocable(derived_cap: &cap_t, src_cap: &cap_t) -> bool {
 pub fn Arch_finaliseCap(cap: &cap_t, final_: bool) -> finaliseCap_ret {
     let mut fc_ret = finaliseCap_ret::default();
     unimplemented!()
-    // match cap.get_cap_type() {
+    // match capability.get_cap_type() {
     //     CapTag::CapFrameCap => {
-    //         if cap.get_frame_mapped_asid() != 0 {
+    //         if capability.get_frame_mapped_asid() != 0 {
     //             match unmapPage(
-    //                 cap.get_frame_size(),
-    //                 cap.get_frame_mapped_asid(),
-    //                 cap.get_frame_mapped_address(),
-    //                 cap.get_frame_base_ptr(),
+    //                 capability.get_frame_size(),
+    //                 capability.get_frame_mapped_asid(),
+    //                 capability.get_frame_mapped_address(),
+    //                 capability.get_frame_base_ptr(),
     //             ) {
     //                 Err(lookup_fault) => unsafe { current_lookup_fault = lookup_fault },
     //                 _ => {}
@@ -658,17 +658,17 @@ pub fn Arch_finaliseCap(cap: &cap_t, final_: bool) -> finaliseCap_ret {
     //     }
 
     //     CapTag::CapPageTableCap => {
-    //         if final_ && cap.get_pt_is_mapped() != 0 {
-    //             let asid = cap.get_pt_mapped_asid();
+    //         if final_ && capability.get_pt_is_mapped() != 0 {
+    //             let asid = capability.get_pt_mapped_asid();
     //             let find_ret = find_vspace_for_asid(asid);
-    //             let pte = cap.get_pt_base_ptr();
+    //             let pte = capability.get_pt_base_ptr();
     //             if find_ret.status == exception_t::EXCEPTION_NONE
     //                 && find_ret.vspace_root.unwrap() as usize == pte
     //             {
     //                 deleteASID(asid, pte as *mut pte_t);
     //             } else {
     //                 convert_to_mut_type_ref::<pte_t>(pte)
-    //                     .unmap_page_table(asid, cap.get_pt_mapped_address());
+    //                     .unmap_page_table(asid, capability.get_pt_mapped_address());
     //             }
     //             if let Some(lookup_fault) = find_ret.lookup_fault {
     //                 unsafe {
@@ -680,7 +680,7 @@ pub fn Arch_finaliseCap(cap: &cap_t, final_: bool) -> finaliseCap_ret {
 
     //     CapTag::CapASIDPoolCap => {
     //         if final_ {
-    //             deleteASIDPool(cap.get_asid_base(), cap.get_asid_pool() as *mut asid_pool_t);
+    //             deleteASIDPool(capability.get_asid_base(), capability.get_asid_pool() as *mut asid_pool_t);
     //         }
     //     }
     //     _ => {}
@@ -727,14 +727,14 @@ pub fn finaliseCap(cap: &cap_t, _final: bool, _exposed: bool) -> finaliseCap_ret
     todo!()
     // let mut fc_ret = finaliseCap_ret::default();
 
-    // if cap.isArchCap() {
-    //     return Arch_finaliseCap(cap, _final);
+    // if capability.isArchCap() {
+    //     return Arch_finaliseCap(capability, _final);
     // }
-    // match cap.get_cap_type() {
+    // match capability.get_cap_type() {
     //     CapTag::CapEndpointCap => {
     //         if _final {
-    //             // cancelAllIPC(cap.get_ep_ptr() as *mut endpoint_t);
-    //             convert_to_mut_type_ref::<endpoint_t>(cap.get_ep_ptr()).cancel_all_ipc()
+    //             // cancelAllIPC(capability.get_ep_ptr() as *mut endpoint_t);
+    //             convert_to_mut_type_ref::<endpoint_t>(capability.get_ep_ptr()).cancel_all_ipc()
     //         }
     //         fc_ret.remainder = cap_t::new_null_cap();
     //         fc_ret.cleanupInfo = cap_t::new_null_cap();
@@ -742,7 +742,7 @@ pub fn finaliseCap(cap: &cap_t, _final: bool, _exposed: bool) -> finaliseCap_ret
     //     }
     //     CapTag::CapNotificationCap => {
     //         if _final {
-    //             let ntfn = convert_to_mut_type_ref::<notification_t>(cap.get_nf_ptr());
+    //             let ntfn = convert_to_mut_type_ref::<notification_t>(capability.get_nf_ptr());
     //             ntfn.safe_unbind_tcb();
     //             ntfn.cancel_call_signal();
     //         }
@@ -762,13 +762,13 @@ pub fn finaliseCap(cap: &cap_t, _final: bool, _exposed: bool) -> finaliseCap_ret
     //     }
     // }
 
-    // match cap.get_cap_type() {
+    // match capability.get_cap_type() {
     //     CapTag::CapCNodeCap => {
     //         return if _final {
     //             fc_ret.remainder = Zombie_new(
-    //                 1usize << cap.get_cnode_radix(),
-    //                 cap.get_cnode_radix(),
-    //                 cap.get_cnode_ptr(),
+    //                 1usize << capability.get_cnode_radix(),
+    //                 capability.get_cnode_radix(),
+    //                 capability.get_cnode_ptr(),
     //             );
     //             fc_ret.cleanupInfo = cap_t::new_null_cap();
     //             fc_ret
@@ -780,7 +780,7 @@ pub fn finaliseCap(cap: &cap_t, _final: bool, _exposed: bool) -> finaliseCap_ret
     //     }
     //     CapTag::CapThreadCap => {
     //         if _final {
-    //             let tcb = convert_to_mut_type_ref::<tcb_t>(cap.get_tcb_ptr());
+    //             let tcb = convert_to_mut_type_ref::<tcb_t>(capability.get_tcb_ptr());
     //             #[cfg(feature = "ENABLE_SMP")]
     //             unsafe {
     //                 crate::deps::remoteTCBStall(tcb)
@@ -800,16 +800,16 @@ pub fn finaliseCap(cap: &cap_t, _final: bool, _exposed: bool) -> finaliseCap_ret
     //         }
     //     }
     //     CapTag::CapZombieCap => {
-    //         fc_ret.remainder = cap.clone();
+    //         fc_ret.remainder = capability.clone();
     //         fc_ret.cleanupInfo = cap_t::new_null_cap();
     //         return fc_ret;
     //     }
     //     CapTag::CapIrqHandlerCap => {
     //         if _final {
-    //             let irq = cap.get_irq_handler();
+    //             let irq = capability.get_irq_handler();
     //             deletingIRQHandler(irq);
     //             fc_ret.remainder = cap_t::new_null_cap();
-    //             fc_ret.cleanupInfo = cap.clone();
+    //             fc_ret.cleanupInfo = capability.clone();
     //             return fc_ret;
     //         }
     //     }
@@ -855,7 +855,7 @@ pub fn preemptionPoint() -> exception_t {
 //     if let Err(lookup_fault) = delete_asid(
 //         asid,
 //         vspace,
-//         &get_currenct_thread().get_cspace(tcbVTable).cap,
+//         &get_currenct_thread().get_cspace(tcbVTable).capability,
 //     ) {
 //         current_lookup_fault = lookup_fault;
 //     }
@@ -868,7 +868,7 @@ pub fn preemptionPoint() -> exception_t {
 //     if let Err(lookup_fault) = delete_asid_pool(
 //         asid_base,
 //         pool,
-//         &get_currenct_thread().get_cspace(tcbVTable).cap,
+//         &get_currenct_thread().get_cspace(tcbVTable).capability,
 //     ) {
 //         current_lookup_fault = lookup_fault;
 //     }

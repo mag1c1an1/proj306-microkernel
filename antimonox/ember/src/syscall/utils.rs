@@ -101,7 +101,7 @@ pub fn check_prio(prio: usize, auth_tcb: &tcb_t) -> exception_t {
 #[inline]
 pub fn check_ipc_buffer_vaild(vptr: usize, cap: &cap_t) -> exception_t {
     if cap.get_cap_type() != CapTag::CapFrameCap {
-        debug!("Requested IPC Buffer is not a frame cap.");
+        debug!("Requested IPC Buffer is not a frame capability.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }

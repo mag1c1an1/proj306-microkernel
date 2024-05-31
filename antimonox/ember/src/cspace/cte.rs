@@ -90,7 +90,7 @@ impl cte_t {
                 ret.cap = cap.clone();
             }
             _ => {
-                panic!(" Invalid arch cap type : {}", cap.get_cap_type() as usize);
+                panic!(" Invalid arch capability type : {}", cap.get_cap_type() as usize);
             }
         }
         ret
@@ -460,7 +460,7 @@ fn setUntypedCapAsFull(srcCap: &cap_t, newCap: &cap_t, srcSlot: &mut cte_t) {
 
 /// 从cspace寻址特定的slot
 /// 
-/// 从给定的cnode、cap index、和depth中找到对应cap的slot，成功则返回slot指针，失败返回找到的最深的cnode
+/// 从给定的cnode、capability index、和depth中找到对应cap的slot，成功则返回slot指针，失败返回找到的最深的cnode
 #[allow(unreachable_code)]
 pub fn resolve_address_bits(node_cap: &cap_t, cap_ptr: usize, _n_bits: usize) -> resolveAddressBits_ret_t {
     let mut ret = resolveAddressBits_ret_t::default();

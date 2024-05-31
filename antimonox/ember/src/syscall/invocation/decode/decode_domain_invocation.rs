@@ -33,7 +33,7 @@ pub fn decode_domain_invocation(invLabel: MessageLabel, length: usize, buffer: O
     }
     let thread_cap = get_extra_cap_by_index(0).unwrap().cap;
     if unlikely(thread_cap.get_cap_type() != CapTag::CapThreadCap) {
-        debug!("Domain Configure: thread cap required.");
+        debug!("Domain Configure: thread capability required.");
         unsafe {
             current_syscall_error._type = seL4_InvalidArgument;
             current_syscall_error.invalidArgumentNumber = 1;

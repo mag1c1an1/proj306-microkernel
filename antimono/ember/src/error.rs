@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
+use thiserror::Error;
+
 // /// Error number.
 // #[repr(i32)]
 // #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -152,15 +154,20 @@ pub enum Sel4Errno {
     Fault = 1,
     LookupFault = 2,
     SysCall = 3,
-    Preemted = 4,
+    Preempted = 4,
 }
 
 /// error used in this crate
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Error)]
 pub enum EmberError {
-    sel4(Sel4Errno),
+    #[error("sel4 error")]
+    SeL4(Sel4Errno),
+    #[error("x")]
     Other(&'static str),
 }
+
+
+pub type Result<T, Err = EmberError> = core::result::Result<T, Err>;
 
 
 // impl From<anti_frame::Error> for Error {

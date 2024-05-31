@@ -31,7 +31,7 @@ pub fn decode_invocation(label: MessageLabel, length: usize, slot: &mut cte_t, c
                         block: bool, call: bool, buffer: Option<&seL4_IPCBuffer>) -> exception_t {
     match cap.get_cap_type() {
         CapTag::CapNullCap | CapTag::CapZombieCap  => {
-            debug!("Attempted to invoke a null or zombie cap {:#x}, {:?}.", cap_index, cap.get_cap_type());
+            debug!("Attempted to invoke a null or zombie capability {:#x}, {:?}.", cap_index, cap.get_cap_type());
             unsafe {
                 current_syscall_error._type = seL4_InvalidCapability;
                 current_syscall_error.invalidCapNumber = 0;
@@ -41,7 +41,7 @@ pub fn decode_invocation(label: MessageLabel, length: usize, slot: &mut cte_t, c
 
         CapTag::CapEndpointCap => {
             if unlikely(cap.get_ep_can_send() == 0) {
-                debug!("Attempted to invoke a read-only endpoint cap {}.", cap_index);
+                debug!("Attempted to invoke a read-only endpoint capability {}.", cap_index);
                 unsafe {
                     current_syscall_error._type = seL4_InvalidCapability;
                     current_syscall_error.invalidCapNumber = 0;
@@ -107,7 +107,7 @@ pub fn decode_invocation(label: MessageLabel, length: usize, slot: &mut cte_t, c
             }
             if unlikely(cap.get_nf_can_send() == 0) {
                 debug!(
-                    "Attempted to invoke a read-only notification cap {}.",
+                    "Attempted to invoke a read-only notification capability {}.",
                     cap_index
                 );
                 unsafe {
@@ -123,7 +123,7 @@ pub fn decode_invocation(label: MessageLabel, length: usize, slot: &mut cte_t, c
 
         CapTag::CapReplyCap => {
             if unlikely(cap.get_reply_master() != 0) {
-                debug!("Attempted to invoke an invalid reply cap {}.", cap_index);
+                debug!("Attempted to invoke an invalid reply capability {}.", cap_index);
                 unsafe {
                     current_syscall_error._type = seL4_InvalidCapability;
                     current_syscall_error.invalidCapNumber = 0;

@@ -23,7 +23,7 @@ pub fn handleInvocation(isCall: bool, isBlocking: bool) -> exception_t {
     let cptr = thread.get_register(capRegister);
     let lu_ret = thread.lookup_slot(cptr);
     if unlikely(lu_ret.status != exception_t::EXCEPTION_NONE) {
-        debug!("Invocation of invalid cap {:#x}.", cptr);
+        debug!("Invocation of invalid capability {:#x}.", cptr);
         unsafe {
             current_fault = seL4_Fault_t::new_cap_fault(cptr, 0);
         }

@@ -1,18 +1,21 @@
-// 16 bytes
+// use crate::{
+//     plus_define_bitfield,
+//     sel4::{
+//         seL4_EndpointBits, seL4_MsgMaxExtraCaps, seL4_NotificationBits, seL4_ReplyBits,
+//         seL4_SlotBits,
+//         utils::{convert_to_mut_type_ref, pageBitsForSize},
+//         wordBits, PT_SIZE_BITS,
+//     },
+//     MASK,
+// };
 
-pub trait Capability {
-    fn to_raw_cap(self) -> RawCap;
-    fn from_raw_cap(raw_cap: RawCap) -> Self;
-    fn cap_type(&self) -> CapType;
-}
+// use super::{exception::exception_t, vspace::pptr_t};
 
-pub enum CapType {}
+use crate::define_bitfield_type;
 
-/// sel4 cap_t
-#[repr(C)]
-pub struct RawCap {
-    pub words: [usize; 2],
-}
+// pub mod cte;
+mod mdb;
+// pub mod zombie;
 
 // #[repr(C)]
 // #[derive(Clone, Copy)]
@@ -20,73 +23,116 @@ pub struct RawCap {
 //     pub status: exception_t,
 //     pub cap: cap_t,
 // }
-
+//
 // #[repr(C)]
 // #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 // pub struct extra_caps_t {
 //     pub excaprefs: [pptr_t; seL4_MsgMaxExtraCaps],
 // }
-
+//
 // #[repr(C)]
 // #[derive(Clone, Copy, Debug)]
 // struct CNodeCapData {
 //     pub words: [usize; 1],
 // }
-
+//
 // impl CNodeCapData {
 //     #[inline]
 //     pub fn new(data: usize) -> Self {
 //         CNodeCapData { words: [data] }
 //     }
-
+//
 //     #[inline]
 //     pub fn get_guard(&self) -> usize {
 //         (self.words[0] & 0xffffffffffffffc0usize) >> 6
 //     }
-
+//
 //     #[inline]
 //     pub fn get_guard_size(&self) -> usize {
 //         self.words[0] & 0x3fusize
 //     }
 // }
-
-// /// Cap 在内核态中的种类枚举
-// #[derive(Eq, PartialEq, Debug)]
-// pub enum CapTag {
-//     CapNullCap = 0,
-//     CapUntypedCap = 2,
-//     CapEndpointCap = 4,
-//     CapNotificationCap = 6,
-//     CapReplyCap = 8,
-//     CapCNodeCap = 10,
-//     CapThreadCap = 12,
-//     CapIrqControlCap = 14,
-//     CapIrqHandlerCap = 16,
-//     CapZombieCap = 18,
-//     CapDomainCap = 20,
-//     CapFrameCap = 1,
-//     CapPageTableCap = 3,
-//     CapPageDirectoryCap = 5,
-//     CapPDPTCap = 7,
-//     CapPML4Cap = 9,
-//     CapASIDControlCap = 11,
-//     CapASIDPoolCap = 13,
-//     CapIOPortCap = 19,
-//     CapIOPortControlCap = 31,
-// }
-
+//
+//
+#[derive(Eq, PartialEq, Debug)]
+pub enum CapType {
+    Null = 0,
+    Untyped = 2,
+    Endpoint = 4,
+    Notification = 6,
+    Reply = 8,
+    CNode = 10,
+    Thread = 12,
+    IrqControl = 14,
+    IrqHandler = 16,
+    Zombie = 18,
+    Domain = 20,
+    Frame = 1,
+    PageTable = 3,
+    PageDirectory = 5,
+    PDPT = 7,
+    PML4 = 9,
+    CapASIDControl = 11,
+    ASIDPool = 13,
+    IOPort = 19,
+    IOPortControl = 31,
+}
+//
 // // cap_t 表示一个capability，由两个机器字组成，包含了类型、对象元数据以及指向内核对象的指针。
 // // 每个类型的capability的每个字段都实现了get和set方法。
+
+define_bitfield_type! {
+    RawCap, 2, 59..64 => {
+        new_null_cap, CapType::Null as usize => {},
+        new_cnode_cap, CapType::CNode as usize => {
+            cnode_ptr, set_cnode_ptr, 1, 0..47, 1, true,
+            cnode_radix,set_cnode_radix, 0, 47..53, 0, false,
+            cnode_guard_size, set_cnode_guard_size, 0, 53..59, 0, false,
+            cnode_guard, set_cnode_guard, 0, 64..128, 0, false,
+       }
+    }
+}
+
+mod test {
+    use ktest::ktest;
+
+    use crate::cspace::raw::{CapType, RawCap};
+
+    #[ktest]
+    fn cap_size_test() {
+        assert_eq!(core::mem::size_of::<RawCap>(), 16);
+    }
+
+    #[ktest]
+    fn null_cap_test() {
+        let cap = RawCap::new_null_cap();
+        assert_eq!(cap.typ(), CapType::Null as usize);
+    }
+
+    #[ktest]
+    fn cnode_cap_test() {
+        let ptr = 0x8000_0000_ffff;
+        let radix = 2;
+        let guard_size = 3;
+        let guard = 4;
+        let cnode_cap = RawCap::new_cnode_cap(ptr, radix, guard_size, guard);
+        assert_eq!((ptr >> 1 << 1) | (0xffff << 48), cnode_cap.cnode_ptr());
+        assert_eq!(radix, cnode_cap.cnode_radix());
+        assert_eq!(guard_size, cnode_cap.cnode_guard_size());
+        assert_eq!(guard, cnode_cap.cnode_guard());
+    }
+}
+
 // plus_define_bitfield! {
 //     cap_t, 2, 0, 59, 5 => {
-//         new_null_cap, CapTag::CapNullCap as usize => {},
-//         new_untyped_cap, CapTag::CapUntypedCap as usize => {
+//         new_null_cap, CapType::Null as usize => {},
+//         new_untyped_cap, CapType::Untyped as usize => {
 //             capPtr, get_untyped_ptr, set_untyped_ptr, 0, 0, 48, 0, true,
 //             capFreeIndex, get_untyped_free_index, set_untyped_free_index, 1, 16, 48, 0, false,
 //             capIsDevice, get_untyped_is_device, set_untyped_is_device, 1, 6, 1, 0, false,
 //             capBlockSize, get_untyped_block_size, set_untyped_block_size, 1, 0, 6, 0, false
 //         },
-//         new_endpoint_cap, CapTag::CapEndpointCap as usize => {
+//         new_endpoint_cap, CapType::Endpoint as usize => {
 //             capCanGrantReply, get_ep_can_grant_reply, set_ep_can_grant_reply, 0, 58, 1, 0, false,
 //             capCanGrant, get_ep_can_grant, set_ep_can_grant, 0, 57, 1, 0, false,
 //             capCanSend, get_ep_can_send, set_ep_can_send, 0, 55, 1, 0, false,
@@ -94,36 +140,36 @@ pub struct RawCap {
 //             capEPPtr, get_ep_ptr, set_ep_ptr, 0, 0, 48, 0, true,
 //             capEPBadge, get_ep_badge, set_ep_badge, 1, 0, 64, 0, false
 //         },
-//         new_notification_cap, CapTag::CapNotificationCap as usize => {
+//         new_notification_cap, CapType::Notification as usize => {
 //             capNtfnCanReceive, get_nf_can_receive, set_nf_can_receive, 0, 58, 1, 0, false,
 //             capNtfnCanSend, get_nf_can_send, set_nf_can_send, 0, 57, 1, 0, false,
 //             capNtfnPtr, get_nf_ptr, set_nf_ptr, 0, 0, 48, 0, true,
 //             capNtfnBadge, get_nf_badge, set_nf_badge, 1, 0, 64, 0, false
 //         },
-//         new_reply_cap, CapTag::CapReplyCap as usize => {
+//         new_reply_cap, CapType::Reply as usize => {
 //             capReplyCanGrant, get_reply_can_grant, set_reply_can_grant, 0, 1, 1, 0, false,
 //             capReplyMaster, get_reply_master, set_reply_master, 0, 0, 1, 0, false,
 //             capTCBPtr, get_reply_tcb_ptr, set_reply_tcb_ptr, 1, 0, 64, 0, false
 //         },
-//         new_cnode_cap, CapTag::CapCNodeCap as usize => {
+//         new_cnode_cap, CapType::CNode as usize => {
 //             capCNodeRadix, get_cnode_radix, set_cnode_radix, 0, 47, 6, 0, false,
 //             capCNodeGuardSize, get_cnode_guard_size, set_cnode_guard_size, 0, 53, 6, 0, false,
 //             capCNodePtr, get_cnode_ptr, set_cnode_ptr, 0, 0, 47, 1, true,
 //             capCNodeGuard, get_cnode_guard, set_cnode_guard, 1, 0, 64, 0, false
 //         },
-//         new_thread_cap, CapTag::CapThreadCap as usize => {
+//         new_thread_cap, CapType::Thread as usize => {
 //             capTCBPtr, get_tcb_ptr, set_tcb_ptr, 0, 0, 48, 0, true
 //         },
-//         new_irq_control_cap, CapTag::CapIrqControlCap as usize => {},
-//         new_irq_handler_cap, CapTag::CapIrqHandlerCap as usize => {
+//         new_irq_control_cap, CapType::IrqControl as usize => {},
+//         new_irq_handler_cap, CapType::IrqHandler as usize => {
 //             capIRQ, get_irq_handler, set_irq_handler, 1, 0, 12, 0, false
 //         },
-//         new_zombie_cap, CapTag::CapZombieCap as usize => {
+//         new_zombie_cap, CapType::Zombie as usize => {
 //             capZombieType, get_zombie_type, set_zombie_type, 0, 0, 7, 0, false,
 //             capZombieID, get_zombie_id, set_zombie_id, 1, 0, 64, 0, false
 //         },
-//         new_domain_cap, CapTag::CapDomainCap as usize => {},
-//         new_frame_cap, CapTag::CapFrameCap as usize => {
+//         new_domain_cap, CapType::Domain as usize => {},
+//         new_frame_cap, CapType::Frame as usize => {
 //             capFSize, get_frame_size, set_frame_size, 0, 57, 2, 0, false,
 //             capFMapType,get_frame_map_type, set_frame_map_type, 0, 55, 2, 0, false,
 //             capFMappedAddress, get_frame_mapped_address, set_frame_mapped_address, 0, 7, 48, 0, true,
@@ -132,28 +178,28 @@ pub struct RawCap {
 //             capFMappedASID, get_frame_mapped_asid, set_frame_mapped_asid, 1, 48, 16, 0, false,
 //             capFBasePtr, get_frame_base_ptr, set_frame_base_ptr, 1, 0, 48, 0, true
 //         },
-//         new_asid_control_cap, CapTag::CapASIDControlCap as usize => {},
-//         new_asid_pool_cap, CapTag::CapASIDPoolCap as usize => {
+//         new_asid_control_cap, CapType::CapASIDControl as usize => {},
+//         new_asid_pool_cap, CapType::ASIDPool as usize => {
 //             capASIDBase, get_asid_base, set_asid_base, 0, 43, 16, 0, false,
 //             capASIDPool, get_asid_pool, set_asid_pool, 0, 0, 37, 2, true
 //         },
-//         new_io_port_cap, CapTag::CapIOPortCap as usize => {
+//         new_io_port_cap, CapType::IOPort as usize => {
 //             capIOPortFirstPort, get_io_port_first_port, set_io_port_first_port, 0, 40, 20, 0, false,
 //             capIOPortLastPort, get_io_port_last_port, set_io_port_last_port, 0, 0, 20, 0, false
 //         },
-//         new_io_port_control_cap, CapTag::CapIOPortControlCap as usize => {
+//         new_io_port_control_cap, CapType::IOPortControl as usize => {
 //         }
 //     }
 // }
-
-// /// cap 的公用方法
+//
+// /// capability 的公用方法
 // impl cap_t {
 //     pub fn update_data(&self, preserve: bool, new_data: usize) -> Self {
 //         if self.isArchCap() {
 //             return self.clone();
 //         }
 //         match self.get_cap_type() {
-//             CapTag::CapEndpointCap => {
+//             CapTag::Endpoint => {
 //                 if !preserve && self.get_ep_badge() == 0 {
 //                     let mut new_cap = self.clone();
 //                     new_cap.set_ep_badge(new_data);
@@ -162,8 +208,8 @@ pub struct RawCap {
 //                     cap_t::new_null_cap()
 //                 }
 //             }
-
-//             CapTag::CapNotificationCap => {
+//
+//             CapTag::Notification => {
 //                 if !preserve && self.get_nf_badge() == 0 {
 //                     let mut new_cap = self.clone();
 //                     new_cap.set_nf_badge(new_data);
@@ -172,14 +218,14 @@ pub struct RawCap {
 //                     cap_t::new_null_cap()
 //                 }
 //             }
-
-//             CapTag::CapCNodeCap => {
+//
+//             CapTag::CNode => {
 //                 let w = CNodeCapData::new(new_data);
 //                 let guard_size = w.get_guard_size();
-//                 if guard_size + self.get_cnode_radix() > wordBits {
+//                 if guard_size + self.get_cnode_radix() > seL4_WordBits as usize {
 //                     return cap_t::new_null_cap();
 //                 }
-//                 let guard = w.get_guard() & MASK!(guard_size);
+//                 let guard = w.get_guard() & mask!(guard_size);
 //                 let mut new_cap = self.clone();
 //                 new_cap.set_cnode_guard(guard);
 //                 new_cap.set_cnode_guard_size(guard_size);
@@ -188,63 +234,63 @@ pub struct RawCap {
 //             _ => self.clone(),
 //         }
 //     }
-
+//
 //     pub fn get_cap_type(&self) -> CapTag {
 //         unsafe { core::mem::transmute::<u8, CapTag>(self.get_type() as u8) }
 //     }
-
+//
 //     pub fn get_cap_ptr(&self) -> usize {
 //         match self.get_cap_type() {
-//             CapTag::CapUntypedCap => self.get_untyped_ptr(),
-//             CapTag::CapEndpointCap => self.get_ep_ptr(),
-//             CapTag::CapNotificationCap => self.get_nf_ptr(),
-//             CapTag::CapCNodeCap => self.get_cnode_ptr(),
-//             CapTag::CapThreadCap => self.get_tcb_ptr(),
-//             CapTag::CapZombieCap => self.get_zombie_ptr(),
-//             CapTag::CapFrameCap => self.get_frame_base_ptr(),
+//             CapTag::Untyped => self.get_untyped_ptr(),
+//             CapTag::Endpoint => self.get_ep_ptr(),
+//             CapTag::Notification => self.get_nf_ptr(),
+//             CapTag::CNode => self.get_cnode_ptr(),
+//             CapTag::Thread => self.get_tcb_ptr(),
+//             CapTag::Zombie => self.get_zombie_ptr(),
+//             CapTag::Frame => self.get_frame_base_ptr(),
 //             // CapTag::CapPageTableCap => self.get_pt_base_ptr(),
-//             CapTag::CapASIDPoolCap => self.get_asid_pool(),
-//             CapTag::CapPageTableCap => self.get_pt_base_ptr(),
-//             CapTag::CapPageDirectoryCap => self.get_pd_base_ptr(),
-//             CapTag::CapPDPTCap => self.get_pdpt_base_ptr(),
-//             CapTag::CapPML4Cap => self.get_pml4_base_ptr(),
+//             CapTag::ASIDPool => self.get_asid_pool(),
+//             CapTag::PageTable => self.get_pt_base_ptr(),
+//             CapTag::PageDirectory => self.get_pd_base_ptr(),
+//             CapTag::PDPT => self.get_pdpt_base_ptr(),
+//             CapTag::PML4 => self.get_pml4_base_ptr(),
 //             _ => 0,
 //         }
 //     }
-
+//
 //     pub fn get_cap_size_bits(&self) -> usize {
 //         match self.get_cap_type() {
-//             CapTag::CapUntypedCap => self.get_untyped_block_size(),
-//             CapTag::CapEndpointCap => seL4_EndpointBits,
-//             CapTag::CapNotificationCap => seL4_NotificationBits,
-//             CapTag::CapCNodeCap => self.get_cnode_radix() + seL4_SlotBits,
-//             CapTag::CapPageTableCap => PT_SIZE_BITS,
-//             CapTag::CapReplyCap => seL4_ReplyBits,
+//             CapTag::Untyped => self.get_untyped_block_size(),
+//             CapTag::Endpoint => seL4_EndpointBits,
+//             CapTag::Notification => seL4_NotificationBits,
+//             CapTag::CNode => self.get_cnode_radix() + seL4_SlotBits,
+//             CapTag::PageTable => PT_SIZE_BITS,
+//             CapTag::Reply => seL4_ReplyBits,
 //             _ => 0,
 //         }
 //     }
-
+//
 //     pub fn get_cap_is_physical(&self) -> bool {
 //         match self.get_cap_type() {
-//             CapTag::CapUntypedCap
-//             | CapTag::CapEndpointCap
-//             | CapTag::CapNotificationCap
-//             | CapTag::CapCNodeCap
-//             | CapTag::CapFrameCap
-//             | CapTag::CapASIDPoolCap
-//             | CapTag::CapPageTableCap
-//             | CapTag::CapZombieCap
-//             | CapTag::CapThreadCap => true,
+//             CapTag::Untyped
+//             | CapTag::Endpoint
+//             | CapTag::Notification
+//             | CapTag::CNode
+//             | CapTag::Frame
+//             | CapTag::ASIDPool
+//             | CapTag::PageTable
+//             | CapTag::Zombie
+//             | CapTag::Thread => true,
 //             _ => false,
 //         }
 //     }
-
+//
 //     pub fn isArchCap(&self) -> bool {
 //         self.get_cap_type() as usize % 2 != 0
 //     }
 // }
-
-// // vm related cap
+//
+// // vm related capability
 // impl cap_t {
 //     #[inline]
 //     pub fn new_page_table_cap(
@@ -257,7 +303,7 @@ pub struct RawCap {
 //         value.words[0] =
 //             0 | (capPTIsMapped & 0x1) << 49 | (capPTMappedAddress & 0xfffffff00000) << 1;
 //         value.words[1] = 0 | (capPTMappedASID & 0xfff) << 48 | (capPTBasePtr & 0xffffffffffff) >> 0;
-//         value.words[0] |= ((CapTag::CapPageTableCap as usize & ((1usize << 5) - 1)) << 59);
+//         value.words[0] |= ((CapTag::PageTable as usize & ((1usize << 5) - 1)) << 59);
 //         value
 //     }
 //     #[inline]
@@ -318,16 +364,16 @@ pub struct RawCap {
 //     }
 //     #[inline]
 //     pub fn new_page_directory_cap(
-//         capPDIsMapped: usize,
-//         capPDMappedAddress: usize,
-//         capPDMappedASID: usize,
-//         capPDBasePtr: usize,
+//         cap_pd_is_mapped: usize,
+//         cap_pd_mapped_address: usize,
+//         cap_pd_mapped_asid: usize,
+//         cap_pd_base_ptr: usize,
 //     ) -> Self {
 //         let mut value = cap_t::default();
 //         value.words[0] =
-//             0 | (capPDIsMapped & 0x1) << 49 | (capPDMappedAddress & 0xffffe0000000) << 1;
-//         value.words[1] = 0 | (capPDMappedASID & 0xfff) << 48 | (capPDBasePtr & 0xffffffffffff) >> 0;
-//         value.words[0] |= ((CapTag::CapPageDirectoryCap as usize & ((1usize << 5) - 1)) << 59);
+//             0 | (cap_pd_is_mapped & 0x1) << 49 | (cap_pd_mapped_address & 0xffffe0000000) << 1;
+//         value.words[1] = 0 | (cap_pd_mapped_asid & 0xfff) << 48 | (cap_pd_base_ptr & 0xffffffffffff) >> 0;
+//         value.words[0] |= ((CapTag::PageDirectory as usize & ((1usize << 5) - 1)) << 59);
 //         value
 //     }
 //     #[inline]
@@ -401,7 +447,7 @@ pub struct RawCap {
 //             0 | (capPDPTIsMapped & 0x1) << 58 | (capPDPTMappedAddress & 0xffc000000000) << 10;
 //         value.words[1] =
 //             0 | (capPDPTMappedASID & 0xfff) << 48 | (capPDPTBasePtr & 0xffffffffffff) >> 0;
-//         value.words[0] |= ((CapTag::CapPDPTCap as usize & ((1usize << 5) - 1)) << 59);
+//         value.words[0] |= ((CapTag::PDPT as usize & ((1usize << 5) - 1)) << 59);
 //         value
 //     }
 //     #[inline]
@@ -471,7 +517,7 @@ pub struct RawCap {
 //         let mut value = cap_t::default();
 //         value.words[0] = 0 | (capPML4MappedASID & 0xfff) << 0 | (capPML4IsMapped & 0x1) << 58;
 //         value.words[1] = 0 | capPML4BasePtr << 0;
-//         value.words[0] |= ((CapTag::CapPML4Cap as usize & ((1usize << 5) - 1)) << 59);
+//         value.words[0] |= ((CapTag::PML4 as usize & ((1usize << 5) - 1)) << 59);
 //         value
 //     }
 //     #[inline]
@@ -520,23 +566,23 @@ pub struct RawCap {
 //         self.words[1] |= (((new_field >> 0) & mask) << 0);
 //     }
 // }
-
+//
 // pub fn same_region_as(cap1: &cap_t, cap2: &cap_t) -> bool {
 //     match cap1.get_cap_type() {
-//         CapTag::CapUntypedCap => {
+//         CapTag::Untyped => {
 //             if cap2.get_cap_is_physical() {
 //                 let aBase = cap1.get_untyped_ptr();
 //                 let bBase = cap2.get_cap_ptr();
-
+//
 //                 let aTop = aBase + MASK!(cap1.get_untyped_block_size());
 //                 let bTop = bBase + MASK!(cap2.get_cap_size_bits());
 //                 return (aBase <= bBase) && (bTop <= aTop) && (bBase <= bTop);
 //             }
-
+//
 //             return false;
 //         }
-//         CapTag::CapFrameCap => {
-//             if cap2.get_cap_type() == CapTag::CapFrameCap {
+//         CapTag::Frame => {
+//             if cap2.get_cap_type() == CapTag::Frame {
 //                 let botA = cap1.get_frame_base_ptr();
 //                 let botB = cap2.get_frame_base_ptr();
 //                 let topA = botA + MASK!(pageBitsForSize(cap1.get_frame_size()));
@@ -545,35 +591,35 @@ pub struct RawCap {
 //             }
 //             false
 //         }
-//         CapTag::CapEndpointCap
-//         | CapTag::CapNotificationCap
-//         | CapTag::CapPageTableCap
-//         | CapTag::CapASIDPoolCap
-//         | CapTag::CapThreadCap => {
+//         CapTag::Endpoint
+//         | CapTag::Notification
+//         | CapTag::PageTable
+//         | CapTag::ASIDPool
+//         | CapTag::Thread => {
 //             if cap2.get_cap_type() == cap1.get_cap_type() {
 //                 return cap1.get_cap_ptr() == cap2.get_cap_ptr();
 //             }
 //             false
 //         }
-//         CapTag::CapASIDControlCap | CapTag::CapDomainCap => {
+//         CapTag::CapASIDControl | CapTag::Domain => {
 //             if cap2.get_cap_type() == cap1.get_cap_type() {
 //                 return true;
 //             }
 //             false
 //         }
-//         CapTag::CapCNodeCap => {
-//             if cap2.get_cap_type() == CapTag::CapCNodeCap {
+//         CapTag::CNode => {
+//             if cap2.get_cap_type() == CapTag::CNode {
 //                 return (cap1.get_cnode_ptr() == cap2.get_cnode_ptr())
 //                     && (cap1.get_cnode_radix() == cap2.get_cnode_radix());
 //             }
 //             false
 //         }
-//         CapTag::CapIrqControlCap => match cap2.get_cap_type() {
-//             CapTag::CapIrqControlCap | CapTag::CapIrqHandlerCap => true,
+//         CapTag::IrqControl => match cap2.get_cap_type() {
+//             CapTag::IrqControl | CapTag::IrqHandler => true,
 //             _ => false,
 //         },
-//         CapTag::CapIrqHandlerCap => {
-//             if cap2.get_cap_type() == CapTag::CapIrqHandlerCap {
+//         CapTag::IrqHandler => {
+//             if cap2.get_cap_type() == CapTag::IrqHandler {
 //                 return cap1.get_irq_handler() == cap2.get_irq_handler();
 //             }
 //             false
@@ -583,14 +629,14 @@ pub struct RawCap {
 //         }
 //     }
 // }
-
+//
 // /// 判断两个cap指向的内核对象是否是同一个内存区域
 // pub fn same_object_as(cap1: &cap_t, cap2: &cap_t) -> bool {
-//     if cap1.get_cap_type() == CapTag::CapUntypedCap {
+//     if cap1.get_cap_type() == CapTag::Untyped {
 //         return false;
 //     }
-//     if cap1.get_cap_type() == CapTag::CapIrqControlCap
-//         && cap2.get_cap_type() == CapTag::CapIrqHandlerCap
+//     if cap1.get_cap_type() == CapTag::IrqControl
+//         && cap2.get_cap_type() == CapTag::IrqHandler
 //     {
 //         return false;
 //     }
@@ -599,75 +645,75 @@ pub struct RawCap {
 //     }
 //     same_region_as(cap1, cap2)
 // }
-
+//
 // fn arch_same_object_as(cap1: &cap_t, cap2: &cap_t) -> bool {
-//     if cap1.get_cap_type() == CapTag::CapFrameCap && cap2.get_cap_type() == CapTag::CapFrameCap {
+//     if cap1.get_cap_type() == CapTag::Frame && cap2.get_cap_type() == CapTag::Frame {
 //         return cap1.get_frame_base_ptr() == cap2.get_frame_base_ptr()
 //             && cap1.get_frame_size() == cap2.get_frame_size()
 //             && (cap1.get_frame_is_device() == 0) == (cap2.get_frame_is_device() == 0);
 //     }
 //     same_region_as(cap1, cap2)
 // }
-
+//
 // pub fn is_cap_revocable(derived_cap: &cap_t, src_cap: &cap_t) -> bool {
 //     if derived_cap.isArchCap() {
 //         return false;
 //     }
-
+//
 //     match derived_cap.get_cap_type() {
-//         CapTag::CapEndpointCap => {
-//             assert_eq!(src_cap.get_cap_type(), CapTag::CapEndpointCap);
+//         CapTag::Endpoint => {
+//             assert_eq!(src_cap.get_cap_type(), CapTag::Endpoint);
 //             return derived_cap.get_ep_badge() != src_cap.get_ep_badge();
 //         }
-
-//         CapTag::CapNotificationCap => {
-//             assert_eq!(src_cap.get_cap_type(), CapTag::CapNotificationCap);
+//
+//         CapTag::Notification => {
+//             assert_eq!(src_cap.get_cap_type(), CapTag::Notification);
 //             return derived_cap.get_nf_badge() != src_cap.get_nf_badge();
 //         }
-
-//         CapTag::CapIrqHandlerCap => {
-//             return src_cap.get_cap_type() == CapTag::CapIrqControlCap;
+//
+//         CapTag::IrqHandler => {
+//             return src_cap.get_cap_type() == CapTag::IrqControl;
 //         }
-
-//         CapTag::CapUntypedCap => {
+//
+//         CapTag::Untyped => {
 //             return true;
 //         }
-
+//
 //         _ => false,
 //     }
 // }
-
+//
 // #[no_mangle]
 // pub fn Arch_finaliseCap(cap: &cap_t, final_: bool) -> finaliseCap_ret {
 //     let mut fc_ret = finaliseCap_ret::default();
 //     unimplemented!()
-//     // match cap.get_cap_type() {
+//     // match capability.get_cap_type() {
 //     //     CapTag::CapFrameCap => {
-//     //         if cap.get_frame_mapped_asid() != 0 {
+//     //         if capability.get_frame_mapped_asid() != 0 {
 //     //             match unmapPage(
-//     //                 cap.get_frame_size(),
-//     //                 cap.get_frame_mapped_asid(),
-//     //                 cap.get_frame_mapped_address(),
-//     //                 cap.get_frame_base_ptr(),
+//     //                 capability.get_frame_size(),
+//     //                 capability.get_frame_mapped_asid(),
+//     //                 capability.get_frame_mapped_address(),
+//     //                 capability.get_frame_base_ptr(),
 //     //             ) {
 //     //                 Err(lookup_fault) => unsafe { current_lookup_fault = lookup_fault },
 //     //                 _ => {}
 //     //             }
 //     //         }
 //     //     }
-
+//
 //     //     CapTag::CapPageTableCap => {
-//     //         if final_ && cap.get_pt_is_mapped() != 0 {
-//     //             let asid = cap.get_pt_mapped_asid();
+//     //         if final_ && capability.get_pt_is_mapped() != 0 {
+//     //             let asid = capability.get_pt_mapped_asid();
 //     //             let find_ret = find_vspace_for_asid(asid);
-//     //             let pte = cap.get_pt_base_ptr();
+//     //             let pte = capability.get_pt_base_ptr();
 //     //             if find_ret.status == exception_t::EXCEPTION_NONE
 //     //                 && find_ret.vspace_root.unwrap() as usize == pte
 //     //             {
 //     //                 deleteASID(asid, pte as *mut pte_t);
 //     //             } else {
 //     //                 convert_to_mut_type_ref::<pte_t>(pte)
-//     //                     .unmap_page_table(asid, cap.get_pt_mapped_address());
+//     //                     .unmap_page_table(asid, capability.get_pt_mapped_address());
 //     //             }
 //     //             if let Some(lookup_fault) = find_ret.lookup_fault {
 //     //                 unsafe {
@@ -676,10 +722,10 @@ pub struct RawCap {
 //     //             }
 //     //         }
 //     //     }
-
+//
 //     //     CapTag::CapASIDPoolCap => {
 //     //         if final_ {
-//     //             deleteASIDPool(cap.get_asid_base(), cap.get_asid_pool() as *mut asid_pool_t);
+//     //             deleteASIDPool(capability.get_asid_base(), capability.get_asid_pool() as *mut asid_pool_t);
 //     //         }
 //     //     }
 //     //     _ => {}
@@ -688,6 +734,7 @@ pub struct RawCap {
 //     // fc_ret.cleanupInfo = cap_t::new_null_cap();
 //     // fc_ret
 // }
+//
 // #[repr(C)]
 // #[derive(Debug, PartialEq, Clone, Copy)]
 // pub struct finaliseSlot_ret {
@@ -695,7 +742,7 @@ pub struct RawCap {
 //     pub success: bool,
 //     pub cleanupInfo: cap_t,
 // }
-
+//
 // impl Default for finaliseSlot_ret {
 //     fn default() -> Self {
 //         finaliseSlot_ret {
@@ -705,14 +752,14 @@ pub struct RawCap {
 //         }
 //     }
 // }
-
+//
 // #[repr(C)]
 // #[derive(Debug, PartialEq, Clone, Copy)]
 // pub struct finaliseCap_ret {
 //     pub remainder: cap_t,
 //     pub cleanupInfo: cap_t,
 // }
-
+//
 // impl Default for finaliseCap_ret {
 //     fn default() -> Self {
 //         finaliseCap_ret {
@@ -721,19 +768,20 @@ pub struct RawCap {
 //         }
 //     }
 // }
+//
 // #[no_mangle]
 // pub fn finaliseCap(cap: &cap_t, _final: bool, _exposed: bool) -> finaliseCap_ret {
 //     todo!()
 //     // let mut fc_ret = finaliseCap_ret::default();
-
-//     // if cap.isArchCap() {
-//     //     return Arch_finaliseCap(cap, _final);
+//
+//     // if capability.isArchCap() {
+//     //     return Arch_finaliseCap(capability, _final);
 //     // }
-//     // match cap.get_cap_type() {
+//     // match capability.get_cap_type() {
 //     //     CapTag::CapEndpointCap => {
 //     //         if _final {
-//     //             // cancelAllIPC(cap.get_ep_ptr() as *mut endpoint_t);
-//     //             convert_to_mut_type_ref::<endpoint_t>(cap.get_ep_ptr()).cancel_all_ipc()
+//     //             // cancelAllIPC(capability.get_ep_ptr() as *mut endpoint_t);
+//     //             convert_to_mut_type_ref::<endpoint_t>(capability.get_ep_ptr()).cancel_all_ipc()
 //     //         }
 //     //         fc_ret.remainder = cap_t::new_null_cap();
 //     //         fc_ret.cleanupInfo = cap_t::new_null_cap();
@@ -741,7 +789,7 @@ pub struct RawCap {
 //     //     }
 //     //     CapTag::CapNotificationCap => {
 //     //         if _final {
-//     //             let ntfn = convert_to_mut_type_ref::<notification_t>(cap.get_nf_ptr());
+//     //             let ntfn = convert_to_mut_type_ref::<notification_t>(capability.get_nf_ptr());
 //     //             ntfn.safe_unbind_tcb();
 //     //             ntfn.cancel_call_signal();
 //     //         }
@@ -760,14 +808,14 @@ pub struct RawCap {
 //     //         }
 //     //     }
 //     // }
-
-//     // match cap.get_cap_type() {
+//
+//     // match capability.get_cap_type() {
 //     //     CapTag::CapCNodeCap => {
 //     //         return if _final {
 //     //             fc_ret.remainder = Zombie_new(
-//     //                 1usize << cap.get_cnode_radix(),
-//     //                 cap.get_cnode_radix(),
-//     //                 cap.get_cnode_ptr(),
+//     //                 1usize << capability.get_cnode_radix(),
+//     //                 capability.get_cnode_radix(),
+//     //                 capability.get_cnode_ptr(),
 //     //             );
 //     //             fc_ret.cleanupInfo = cap_t::new_null_cap();
 //     //             fc_ret
@@ -779,7 +827,7 @@ pub struct RawCap {
 //     //     }
 //     //     CapTag::CapThreadCap => {
 //     //         if _final {
-//     //             let tcb = convert_to_mut_type_ref::<tcb_t>(cap.get_tcb_ptr());
+//     //             let tcb = convert_to_mut_type_ref::<tcb_t>(capability.get_tcb_ptr());
 //     //             #[cfg(feature = "ENABLE_SMP")]
 //     //             unsafe {
 //     //                 crate::deps::remoteTCBStall(tcb)
@@ -799,16 +847,16 @@ pub struct RawCap {
 //     //         }
 //     //     }
 //     //     CapTag::CapZombieCap => {
-//     //         fc_ret.remainder = cap.clone();
+//     //         fc_ret.remainder = capability.clone();
 //     //         fc_ret.cleanupInfo = cap_t::new_null_cap();
 //     //         return fc_ret;
 //     //     }
 //     //     CapTag::CapIrqHandlerCap => {
 //     //         if _final {
-//     //             let irq = cap.get_irq_handler();
+//     //             let irq = capability.get_irq_handler();
 //     //             deletingIRQHandler(irq);
 //     //             fc_ret.remainder = cap_t::new_null_cap();
-//     //             fc_ret.cleanupInfo = cap.clone();
+//     //             fc_ret.cleanupInfo = capability.clone();
 //     //             return fc_ret;
 //     //         }
 //     //     }
@@ -822,16 +870,16 @@ pub struct RawCap {
 //     // fc_ret.cleanupInfo = cap_t::new_null_cap();
 //     // return fc_ret;
 // }
-
+//
 // #[no_mangle]
 // pub fn post_cap_deletion(cap: &cap_t) {
-//     if cap.get_cap_type() == CapTag::CapIrqHandlerCap {
+//     if cap.get_cap_type() == CapTag::IrqHandler {
 //         let irq = cap.get_irq_handler();
 //         // setIRQState(IRQState::IRQInactive, irq);
 //         unimplemented!()
 //     }
 // }
-
+//
 // #[no_mangle]
 // pub fn preemptionPoint() -> exception_t {
 //     unsafe {
@@ -839,7 +887,7 @@ pub struct RawCap {
 //         // ksWorkUnitsCompleted += 1;
 //         // if ksWorkUnitsCompleted >= CONFIG_MAX_NUM_WORK_UNITS_PER_PREEMPTION {
 //         //     ksWorkUnitsCompleted = 0;
-
+//
 //         //     if isIRQPending() {
 //         //         return exception_t::EXCEPTION_PREEMTED;
 //         //     }
@@ -847,33 +895,33 @@ pub struct RawCap {
 //         // exception_t::EXCEPTION_NONE
 //     }
 // }
-
+//
 // // #[no_mangle]
 // // fn deleteASID(asid: asid_t, vspace: *mut pte_t) {
 // // unsafe {
 // //     if let Err(lookup_fault) = delete_asid(
 // //         asid,
 // //         vspace,
-// //         &get_currenct_thread().get_cspace(tcbVTable).cap,
+// //         &get_currenct_thread().get_cspace(tcbVTable).capability,
 // //     ) {
 // //         current_lookup_fault = lookup_fault;
 // //     }
 // // }
 // // }
-
+//
 // // #[no_mangle]
 // // fn deleteASIDPool(asid_base: asid_t, pool: *mut asid_pool_t) {
 // // unsafe {
 // //     if let Err(lookup_fault) = delete_asid_pool(
 // //         asid_base,
 // //         pool,
-// //         &get_currenct_thread().get_cspace(tcbVTable).cap,
+// //         &get_currenct_thread().get_cspace(tcbVTable).capability,
 // //     ) {
 // //         current_lookup_fault = lookup_fault;
 // //     }
 // // }
 // // }
-
+//
 // plus_define_bitfield! {
 //     seL4_CapRights_t, 1, 0, 0, 0 => {
 //         new, 0 => {
@@ -884,19 +932,10 @@ pub struct RawCap {
 //         }
 //     }
 // }
-
+//
 // impl seL4_CapRights_t {
 //     #[inline]
 //     pub fn from_word(word: usize) -> Self {
 //         Self { words: [word] }
 //     }
 // }
-
-#[cfg(ktest)]
-mod test {
-    use aster_frame::early_print;
-
-    #[ktest::ktest]
-    fn xx() {
-    }
-}

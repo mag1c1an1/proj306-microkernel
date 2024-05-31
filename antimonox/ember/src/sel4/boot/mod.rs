@@ -421,9 +421,9 @@ pub mod bootstrap {
                 cap_t::new_io_port_control_cap(),
             );
 
-            /* create the cap for managing thread domains IGNORED*/
+            /* create the capability for managing thread domains IGNORED*/
             create_domain_cap(&root_cnode_cap);
-            /* initialise the IRQ states and provide the IRQ control cap */
+            /* initialise the IRQ states and provide the IRQ control capability */
             init_irqs(&root_cnode_cap);
 
             // tsc
@@ -437,7 +437,7 @@ pub mod bootstrap {
             //     return false;
             // }
 
-            /* Create and map bootinfo frame cap */
+            /* Create and map bootinfo frame capability */
             create_bi_frame_cap(&root_cnode_cap, &it_vspace_cap, bi_frame_vptr);
 
             /* create and map extra bootinfo region */
@@ -695,7 +695,7 @@ pub mod bootstrap {
     //     );
 
     //     cte_insert(
-    //         &dc_ret.cap,
+    //         &dc_ret.capability,
     //         cnode.get_offset_slot(seL4_CapInitThreadIPCBuffer),
     //         tcb.get_cspace_mut_ref(tcbBuffer),
     //     );
@@ -716,10 +716,10 @@ pub mod bootstrap {
     //         tcb.tcbAffinity = 0;
     //     }
 
-    //     let cap = cap_t::new_thread_cap(tcb.get_ptr());
+    //     let capability = cap_t::new_thread_cap(tcb.get_ptr());
     //     write_slot(
     //         cnode.get_offset_slot(seL4_CapInitThreadTCB) as *mut cte_t,
-    //         cap,
+    //         capability,
     //     );
     //     // forget(*tcb);
     //     tcb as *mut tcb_t
@@ -790,7 +790,7 @@ pub mod bootstrap {
     pub unsafe fn provide_cap(root_cnode_cap: &cap_t, cap: cap_t) {
         if ndks_boot.slot_pos_cur >= BIT!(CONFIG_ROOT_CNODE_SIZE_BITS) {
             error!(
-                "can't add another cap, all {} (=2^CONFIG_ROOT_CNODE_SIZE_BITS) slots used",
+                "can't add another capability, all {} (=2^CONFIG_ROOT_CNODE_SIZE_BITS) slots used",
                 BIT!(CONFIG_ROOT_CNODE_SIZE_BITS)
             );
             panic!("boom");
@@ -838,7 +838,7 @@ pub mod bootstrap {
     ) -> bool {
         /*
            This code works with regions that wrap (where end < start), because the
-           loop cuts up the region into size-aligned chunks, one for each cap. Memory
+           loop cuts up the region into size-aligned chunks, one for each capability. Memory
            chunks that are size-aligned cannot themselves overflow, so they satisfy
            alignment, size, and overflow conditions. The region [0..end) is not
            necessarily part of the kernel window (depending on the value of
@@ -896,7 +896,7 @@ pub mod bootstrap {
             error!("invaild size_bits");
             return false;
         }
-        // All cap ptrs must be aligned to object size
+        // All capability ptrs must be aligned to object size
         if !IS_ALIGNED!(pptr, size_bits) {
             error!("unaligned untyped ponter");
             return false;

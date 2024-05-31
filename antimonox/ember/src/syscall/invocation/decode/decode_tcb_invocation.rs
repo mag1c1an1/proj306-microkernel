@@ -221,7 +221,7 @@ fn decode_tcb_configure(target_thread_cap: &cap_t, msg_length: usize, target_thr
         Err(status) => return status,
     }
     if croot_cap.get_cap_type() != CapTag::CapCNodeCap {
-        debug!("TCB Configure: CSpace cap is invalid.");
+        debug!("TCB Configure: CSpace capability is invalid.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
@@ -231,7 +231,7 @@ fn decode_tcb_configure(target_thread_cap: &cap_t, msg_length: usize, target_thr
         Err(status) => return status,
     }
     if !is_valid_vtable_root(&vroot_cap) {
-        debug!("TCB Configure: VSpace cap is invalid.");
+        debug!("TCB Configure: VSpace capability is invalid.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
@@ -254,7 +254,7 @@ fn decode_set_priority(cap: &cap_t, length: usize, buffer: Option<&seL4_IPCBuffe
     let new_prio = get_syscall_arg(0, buffer);
     let auth_cap = get_extra_cap_by_index(0).unwrap().cap;
     if auth_cap.get_cap_type() != CapTag::CapThreadCap {
-        debug!("Set priority: authority cap not a TCB.");
+        debug!("Set priority: authority capability not a TCB.");
         unsafe {
             current_syscall_error._type = seL4_InvalidCapability;
             current_syscall_error.invalidCapNumber = 1;
@@ -279,7 +279,7 @@ fn decode_set_mc_priority(cap: &cap_t, length: usize, buffer: Option<&seL4_IPCBu
     let new_mcp = get_syscall_arg(0, buffer);
     let auth_cap= get_extra_cap_by_index(0).unwrap().cap;
     if auth_cap.get_cap_type() != CapTag::CapThreadCap {
-        debug!("SetMCPriority: authority cap not a TCB.");
+        debug!("SetMCPriority: authority capability not a TCB.");
         unsafe {
             current_syscall_error._type = seL4_InvalidCapability;
             current_syscall_error.invalidCapNumber = 1;
@@ -307,7 +307,7 @@ fn decode_set_sched_params(cap: &cap_t, length: usize, buffer: Option<&seL4_IPCB
     let new_prio = get_syscall_arg(1, buffer);
     let auth_cap = get_extra_cap_by_index(0).unwrap().cap;
     if auth_cap.get_cap_type() != CapTag::CapThreadCap {
-        debug!("SetSchedParams: authority cap not a TCB.");
+        debug!("SetSchedParams: authority capability not a TCB.");
         unsafe {
             current_syscall_error._type = seL4_InvalidCapability;
             current_syscall_error.invalidCapNumber = 1;
@@ -386,7 +386,7 @@ fn decode_set_space(cap: &cap_t, length: usize, slot: &mut cte_t, buffer: Option
         Err(status) => return status,
     }
     if croot_cap.get_cap_type() != CapTag::CapCNodeCap {
-        debug!("TCB Configure: CSpace cap is invalid.");
+        debug!("TCB Configure: CSpace capability is invalid.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }
@@ -396,7 +396,7 @@ fn decode_set_space(cap: &cap_t, length: usize, slot: &mut cte_t, buffer: Option
         Err(status) => return status,
     }
     if !is_valid_vtable_root(&vroot_cap) {
-        debug!("TCB Configure: VSpace cap is invalid.");
+        debug!("TCB Configure: VSpace capability is invalid.");
         unsafe { current_syscall_error._type = seL4_IllegalOperation; }
         return exception_t::EXCEPTION_SYSCALL_ERROR;
     }

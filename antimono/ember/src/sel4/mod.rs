@@ -1,6 +1,14 @@
 use aster_frame::cpu::GeneralRegs;
 
+pub use sel4::sys::*;
+
+pub mod config {
+    pub use sel4::config::consts::*;
+}
+
 pub mod thread;
+
+pub mod cspace;
 
 pub trait SeL4Regs {
     fn get_cap_reg(&self) -> usize;
@@ -26,4 +34,3 @@ impl SeL4Regs for GeneralRegs {
         self.fsbase = tls;
     }
 }
-pub use sel4::sys::*;

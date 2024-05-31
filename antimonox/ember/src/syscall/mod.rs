@@ -112,7 +112,7 @@ mod sel4_syscalls;
 //         unsafe { current_fault = seL4_Fault_t::new_cap_fault(thread.tcbFaultHandler, 0); }
 //         return exception_t::EXCEPTION_FAULT;
 //     }
-//     let handler_cap = &unsafe { (*lu_ret.slot).cap };
+//     let handler_cap = &unsafe { (*lu_ret.slot).capability };
 //     if handler_cap.get_cap_type() == CapTag::CapEndpointCap
 //         && (handler_cap.get_ep_can_grant() != 0
 //             || handler_cap.get_ep_can_grant_reply() != 0) {
@@ -150,7 +150,7 @@ mod sel4_syscalls;
 // fn handle_reply() {
 //     let current_thread = get_currenct_thread();
 //     let caller_slot = current_thread.get_cspace_mut_ref(tcbCaller);
-//     let caller_cap = &caller_slot.cap;
+//     let caller_cap = &caller_slot.capability;
 //     if caller_cap.get_cap_type() == CapTag::CapReplyCap {
 //         if caller_cap.get_reply_master() != 0 {
 //             return;
@@ -168,7 +168,7 @@ mod sel4_syscalls;
 //         unsafe { current_fault = seL4_Fault_t::new_cap_fault(ep_cptr, 1); }
 //         return handle_fault(current_thread);
 //     }
-//     let ipc_cap = unsafe { (*lu_ret.slot).cap };
+//     let ipc_cap = unsafe { (*lu_ret.slot).capability };
 //     match ipc_cap.get_cap_type() {
 //         CapTag::CapEndpointCap => {
 //             if unlikely(ipc_cap.get_ep_can_receive() == 0) {

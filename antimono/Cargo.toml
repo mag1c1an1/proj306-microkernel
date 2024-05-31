@@ -17,7 +17,6 @@ ktest = { path = "../asterinas/framework/libs/ktest" }
 log = "0.4"
 ember = { path = "ember" }
 
-
 [workspace]
 members = ["ember", "crates/sel4", "crates/sel4-rustfmt-helper", "usertest"]
 exclude = ["target/osdk/base"]
