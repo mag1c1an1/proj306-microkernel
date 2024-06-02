@@ -13,7 +13,7 @@ use xmas_elf::{
     program::{self, ProgramHeader64},
 };
 
-use crate::common::region::VAddr;
+use crate::common::region::Vaddr;
 use crate::EmberResult;
 use crate::error::EmberError;
 
@@ -60,8 +60,8 @@ impl Elf {
 
     // The following info is used to setup init stack
     /// the entry point of the elf
-    pub fn entry_point(&self) -> VAddr {
-        self.elf_header.pt2.entry_point as VAddr
+    pub fn entry_point(&self) -> Vaddr {
+        self.elf_header.pt2.entry_point as Vaddr
     }
     /// program header table offset
     pub fn ph_off(&self) -> u64 {
@@ -77,14 +77,14 @@ impl Elf {
     }
 
     /// The virtual addr of program headers table address
-    pub fn ph_addr(&self) -> EmberResult<VAddr> {
+    pub fn ph_addr(&self) -> EmberResult<Vaddr> {
         let ph_offset = self.ph_off();
         for program_header in &self.program_headers {
             if program_header.offset <= ph_offset
                 && ph_offset < program_header.offset + program_header.file_size
             {
                 return Ok(
-                    (ph_offset - program_header.offset + program_header.virtual_addr) as VAddr,
+                    (ph_offset - program_header.offset + program_header.virtual_addr) as Vaddr,
                 );
             }
         }
@@ -109,7 +109,7 @@ impl Elf {
         let mut start: u64 = 0x7fffffffffffffff;
         let mut end: u64 = 0;
         for header in &self.program_headers {
-            let sect_start = header.physical_addr;
+            let sect_start = header.virtual_addr;
             let sect_end = sect_start + header.mem_size;
             start = start.min(sect_start);
             end = end.max(sect_end);
