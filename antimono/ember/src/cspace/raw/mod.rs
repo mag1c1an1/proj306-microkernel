@@ -13,8 +13,9 @@
 
 use crate::define_bitfield_type;
 
-// pub mod cte;
+pub mod cte;
 mod mdb;
+
 // pub mod zombie;
 
 // #[repr(C)]
@@ -54,6 +55,7 @@ mod mdb;
 // }
 //
 //
+#[repr(usize)]
 #[derive(Eq, PartialEq, Debug)]
 pub enum CapType {
     Null = 0,

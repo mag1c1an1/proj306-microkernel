@@ -129,7 +129,7 @@ macro_rules! define_bitfield_type {
         ($name:ident, $total_words:expr => { $( $field:ident, $set_field:ident, $shift:tt, $field_range:expr, $offset:tt, $sign_ext:tt),* $(,)?}) => {
 
         #[repr(C)]
-        #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+        #[derive(Debug,Clone, PartialEq, Eq)]
         pub struct $name(pub $crate::common::SeL4Bitfield<usize, $total_words>);
 
         impl Default for $name {
@@ -169,7 +169,7 @@ macro_rules! define_bitfield_type {
         ($name:ident, $total_words:expr,$type_range:expr =>
             { $($variant:ident, $type_value:expr => { $($field:ident, $set_field:ident, $offset:expr,$field_range:expr,$shift:expr, $sign_ext:tt),* $(,)?}), * $(,)?}) => {
             #[repr(C)]
-            #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+            #[derive(Debug, Clone, PartialEq, Eq)]
             pub struct $name(pub $crate::common::SeL4Bitfield<usize, $total_words>);
 
             impl Default for $name {
@@ -215,6 +215,16 @@ macro_rules! define_bitfield_type {
             }
         }
 }
+
+/// return current thread
+#[macro_export]
+macro_rules! current_thread {
+    () => {
+        $crate::thread::Thread::current()
+    };
+}
+
+
 
 mod test {
     use ktest::ktest;

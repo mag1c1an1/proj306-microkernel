@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
+use aster_frame::Error;
 use thiserror::Error;
 
 // /// Error number.
@@ -162,12 +163,36 @@ pub enum Sel4Errno {
 pub enum EmberError {
     #[error("sel4 error")]
     SeL4(Sel4Errno),
-    #[error("x")]
+    #[error("{0:?}")]
+    AsterFrame(Error),
+    #[error("{0}")]
     Other(&'static str),
 }
 
+impl EmberError {
+    pub(crate) fn errno(&self) -> i32 {
+        match *self {
+            EmberError::SeL4(sel4) => {
+                sel4 as i32
+            }
+            EmberError::Other(_) => {
+                999
+            }
+            EmberError::AsterFrame(_) => {
+                9999
+            }
+        }
+    }
+}
 
-pub type Result<T, Err = EmberError> = core::result::Result<T, Err>;
+
+pub type EmberResult<T> = Result<T, EmberError>;
+
+impl From<Error> for EmberError {
+    fn from(value: Error) -> Self {
+        EmberError::AsterFrame(value)
+    }
+}
 
 
 // impl From<anti_frame::Error> for Error {

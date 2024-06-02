@@ -5,12 +5,7 @@ use aster_frame::prelude::*;
 
 #[aster_main]
 fn kernel_main() {
-    set_max_level(option_env!("LOG").unwrap_or(""));
+    set_max_level(option_env!("LOG").unwrap_or("TRACE"));
     ember::init();
-    println!("Hello world from guest kernel!");
-    log::trace!("xxxx");
-    log::warn!("xxxx");
-    log::error!("xxxx");
-    log::info!("xxxx");
-    log::debug!("xxxx");
+    ember::run_root_server();
 }

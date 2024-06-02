@@ -1,4 +1,8 @@
-// use crate::{error::Errno, return_errno_with_message, Result};
+use aster_frame::cpu::UserContext;
+
+use crate::error::{EmberError, Sel4Errno};
+use crate::EmberResult;
+use crate::sel4::SeL4ABI;
 
 pub mod sel4_syscalls;
 // pub mod utils;
@@ -265,91 +269,72 @@ macro_rules! syscall_handler {
     (6, $fn_name: ident, $args: ident) => { $fn_name($args[0] as _, $args[1] as _, $args[2] as _, $args[3] as _, $args[4] as _, $args[5] as _)};
     (6, $fn_name: ident, $args: ident, $context: expr) => { $fn_name($args[0] as _, $args[1] as _, $args[2] as _, $args[3] as _, $args[4] as _, $args[5] as _, $context)};
 }
-// pub struct SyscallArgument {
-//     syscall_number: i64,
-//     args: [u64; 6],
-// }
-//
-// impl SyscallArgument {
-//     fn new_from_context(context: &UserContext) -> Self {
-//         let syscall_number = context.rax() as i64;
-//         let mut args = [0u64; 6];
-//         args[0] = context.rdi() as u64;
-//         args[1] = context.rsi() as u64;
-//         args[2] = context.rdx() as u64;
-//         args[3] = context.r10() as u64;
-//         args[4] = context.r8() as u64;
-//         args[5] = context.r9() as u64;
-//         Self {
-//             syscall_number,
-//             args,
-//         }
-//     }
-// }
-//
-// #[derive(Debug, Clone, Copy)]
-// pub enum SyscallReturn {
-//     /// return isize, this value will be used to set rax
-//     Return(isize),
-//     /// does not need to set rax
-//     NoReturn,
-// }
-//
-// pub fn handle_syscall(context: &mut UserContext) {
-//     let syscall_frame = SyscallArgument::new_from_context(context);
-//     let syscall_return =
-//         syscall_dispatch(syscall_frame.syscall_number, syscall_frame.args, context);
-//
-//     match syscall_return {
-//         Ok(return_value) => {
-//             if let SyscallReturn::Return(return_value) = return_value {
-//                 context.set_rax(return_value as usize);
-//             }
-//         }
-//         Err(err) => {
-//             debug!("syscall return error: {:?}", err);
-//             let errno = err.error() as i32;
-//             context.set_rax((-errno) as usize)
-//         }
-//     }
-// }
-//
-// define_syscall_nums! {
-//     SEL4_SYS_CALL = -1,
-//     SEL4_SYS_REPLY_RECV = -2,
-//     SEL4_SYS_SEND = -3,
-//     SEL4_SYS_NB_SEND = -4,
-//     SEL4_SYS_RECV = -5,
-//     SEL4_SYS_REPLY = -6,
-//     SEL4_SYS_YIELD= -7,
-//     SEL4_SYS_NB_RECV = -8,
-//     SEL4_SYS_DEBUG_PUT_CHAR = -9,
-//     SEL4_SYS_DEBUG_DUMP_SCHEDULER=-10,
-//     SEL4_SYS_DEBUG_HALT = -11,
-//     SEL4_SYS_DEBUG_CAP_IDENTIFY = -12,
-//     SEL4_SYS_DEBUG_SNAPSHOT_RESTORE = -13,
-//     SEL4_SYS_DEBUG_NAME_THREAD = -14,
-//     SEL4_SYS_DEBUG_SEND_IPI = -15,
-//     SEL4_SET_TLS_BASE = -29
-// }
-//
-// pub fn syscall_dispatch(
-//     syscall_number: i64, // sel4 only
-//     args: [u64; 6],
-//     context: &mut UserContext,
-// ) -> Result<SyscallReturn> {
-//     match syscall_number {
-//         SEL4_SET_TLS_BASE => syscall_handler!(0, sel4_set_tls_base, context),
-//         SEL4_SYS_DEBUG_PUT_CHAR => syscall_handler!(0, sel4_kernel_putchar, context),
-//         SEL4_SYS_DEBUG_HALT => syscall_handler!(0, sel4_sys_debug_halt),
-//         // SEL4_SYS_DEBUG_NAME_THREAD => syscall_handler!(1, sel4_sys_debug_name_thread),
-//         _ => {
-//             error!("Unimplemented syscall number: {}", syscall_number);
-//             return_errno_with_message!(Errno::ENOSYS, "Unimplemented syscall");
-//         }
-//     }
-// }
-//
+pub struct SyscallArgument {
+    syscall_number: i32,
+    args: [u64; 6],
+}
+
+impl SyscallArgument {
+    fn new_from_context(context: &UserContext) -> Self {
+        let syscall_number = context.rax() as i32;
+        let mut args = [0u64; 6];
+        args[0] = context.rdi() as u64;
+        args[1] = context.rsi() as u64;
+        args[2] = context.rdx() as u64;
+        args[3] = context.r10() as u64;
+        args[4] = context.r8() as u64;
+        args[5] = context.r9() as u64;
+        Self {
+            syscall_number,
+            args,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum SyscallReturn {
+    /// return isize, this value will be used to set rax
+    Return(isize),
+    /// does not need to set rax
+    NoReturn,
+}
+
+pub fn handle_syscall(context: &mut UserContext) {
+    let syscall_frame = SyscallArgument::new_from_context(context);
+    let syscall_return =
+        syscall_dispatch(syscall_frame.syscall_number, syscall_frame.args, context);
+
+    match syscall_return {
+        Ok(return_value) => {
+            if let SyscallReturn::Return(return_value) = return_value {
+                context.set_syscall_ret(return_value as usize);
+            }
+        }
+        Err(err) => {
+            debug!("syscall return error: {:?}", err);
+            let errno = err.errno() as i32;
+            context.set_syscall_ret((errno) as usize)
+        }
+    }
+}
+
+pub fn syscall_dispatch(
+    syscall_number: i32, // sel4 only
+    args: [u64; 6],
+    context: &mut UserContext,
+) -> EmberResult<SyscallReturn> {
+    match syscall_number {
+        // SEL4_SET_TLS_BASE => syscall_handler!(0, sel4_set_tls_base, context),
+        // SEL4_SYS_DEBUG_PUT_CHAR => syscall_handler!(0, sel4_kernel_putchar, context),
+        // SEL4_SYS_DEBUG_HALT => syscall_handler!(0, sel4_sys_debug_halt),
+        // SEL4_SYS_DEBUG_NAME_THREAD => syscall_handler!(1, sel4_sys_debug_name_thread),
+        _ => {
+            error!("Unimplemented syscall number: {}", syscall_number);
+            Err(EmberError::SeL4(Sel4Errno::SysCall))
+        }
+    }
+}
+
 // #[macro_export]
 // macro_rules! log_syscall_entry {
 //     ($syscall_name: tt) => {

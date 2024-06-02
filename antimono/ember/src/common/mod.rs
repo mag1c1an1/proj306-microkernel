@@ -1,6 +1,9 @@
 pub use sel4::CNodeCapData;
 use sel4_bitfield_ops::Bitfield;
 
+pub mod region;
+
+
 pub type SeL4Bitfield<T, const N: usize> = Bitfield<[T; N], T>;
 
 /// This is strong Arch related
