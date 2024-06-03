@@ -1,8 +1,10 @@
 use aster_frame::cpu::UserContext;
 
-use crate::error::{EmberError, Sel4Errno};
 use crate::EmberResult;
+use crate::error::{EmberError, Sel4Errno};
 use crate::sel4::SeL4ABI;
+use crate::sel4::syscall_id::*;
+use crate::syscall::sel4_syscalls::{sel4_kernel_putchar, sel4_set_tls_base};
 
 pub mod sel4_syscalls;
 // pub mod utils;
@@ -318,14 +320,15 @@ pub fn handle_syscall(context: &mut UserContext) {
     }
 }
 
+
 pub fn syscall_dispatch(
     syscall_number: i32, // sel4 only
     args: [u64; 6],
     context: &mut UserContext,
 ) -> EmberResult<SyscallReturn> {
     match syscall_number {
-        // SEL4_SET_TLS_BASE => syscall_handler!(0, sel4_set_tls_base, context),
-        // SEL4_SYS_DEBUG_PUT_CHAR => syscall_handler!(0, sel4_kernel_putchar, context),
+        SetTLSBase => syscall_handler!(0,sel4_set_tls_base,context),
+        DebugPutChar => syscall_handler!(0,sel4_kernel_putchar,context),
         // SEL4_SYS_DEBUG_HALT => syscall_handler!(0, sel4_sys_debug_halt),
         // SEL4_SYS_DEBUG_NAME_THREAD => syscall_handler!(1, sel4_sys_debug_name_thread),
         _ => {
@@ -335,18 +338,18 @@ pub fn syscall_dispatch(
     }
 }
 
-// #[macro_export]
-// macro_rules! log_syscall_entry {
-//     ($syscall_name: tt) => {
-//         if log_enabled!(log::Level::Info) {
-//             let syscall_name_str = stringify!($syscall_name);
-//             // let pid = $crate::current!().pid();
-//             // let tid = $crate::current_thread!().tid();
-//             info!(
-//                 // "[pid={}][tid={}][id={}][{}]",
-//                 "[id={}][{}]",
-//                 $syscall_name, syscall_name_str
-//             );
-//         }
-//     };
-// }
+#[macro_export]
+macro_rules! log_syscall_entry {
+    ($syscall_name: tt) => {
+        if log_enabled!(log::Level::Info) {
+            let syscall_name_str = stringify!($syscall_name);
+            // let pid = $crate::current!().pid();
+            // let tid = $crate::current_thread!().tid();
+            info!(
+                // "[pid={}][tid={}][id={}][{}]",
+                "[syscall_id={}][{}]",
+                $syscall_name, syscall_name_str
+            );
+        }
+    };
+}

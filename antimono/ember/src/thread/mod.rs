@@ -6,10 +6,10 @@ use core::sync::atomic::{AtomicU32, Ordering};
 
 use aster_frame::sync::Mutex;
 use aster_frame::task::Task;
+use aster_frame::vm::VmSpace;
 
 use crate::bit;
 use crate::cspace::{CNode, Slot};
-use crate::sel4::seL4_TCBBits;
 use crate::sel4::tcb::{TCB_CNODE_ENTRIES, TCB_SIZE_BITS};
 use crate::thread::raw::{DebugRawTcb, RawTcb};
 
@@ -30,15 +30,17 @@ pub struct Thread {
     tid: Tid,
     name: String,
     task: Arc<Task>,
+    vm_space: Arc<VmSpace>,
     tcb_object: Mutex<TcbObject>,
 }
 
 impl Thread {
-    pub fn new(task: Arc<Task>, tcb_object: TcbObject) -> Self {
+    pub fn new(task: Arc<Task>, tcb_object: TcbObject, vm_space: Arc<VmSpace>) -> Self {
         Thread {
             tid: allocate_tid(),
             name: String::new(),
             task,
+            vm_space,
             tcb_object: Mutex::new(tcb_object),
         }
     }
@@ -65,7 +67,9 @@ impl Thread {
     }
     pub fn set_name(&mut self, name: String) {}
     pub fn state(&self) {}
-    pub fn run(&self) {}
+    pub fn run(&self) {
+        self.task.run()
+    }
     /// yield now
     pub fn suspend(&self) {
         Task::yield_now()
@@ -112,7 +116,7 @@ unsafe impl Sync for TcbObject {}
 
 
 impl TcbObject {
-    fn new(start: NonNull<[u8; bit!(seL4_TCBBits)]>) -> Self {
+    pub(crate) fn new(start: NonNull<u8>) -> Self {
         unsafe {
             let tcb_cnode = start.cast::<CNode>();
             let tcb_cnode_size = TCB_CNODE_ENTRIES * size_of::<Slot>();

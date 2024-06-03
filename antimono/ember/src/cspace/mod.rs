@@ -9,14 +9,6 @@ use crate::EmberResult;
 mod capability;
 mod raw;
 
-/// a cnode object
-#[repr(transparent)]
-#[derive(Debug)]
-pub struct CNode
-{
-    slots: SlotVec,
-}
-
 #[repr(transparent)]
 #[derive(Debug, Default)]
 pub struct Slot(CTE);
@@ -53,13 +45,13 @@ impl Slot {
 
 /// care about drop?
 #[derive(Debug)]
-pub struct SlotVec
+pub struct CNode
 {
     start: NonNull<[Slot]>,
     _phantom: core::marker::PhantomData<[Slot]>,
 }
 
-impl SlotVec {
+impl CNode {
     pub fn get_slot(&self, index: usize) -> &Slot {
         &self.as_ref()[index]
     }
@@ -75,13 +67,13 @@ impl SlotVec {
 }
 
 
-impl AsRef<[Slot]> for SlotVec {
+impl AsRef<[Slot]> for CNode {
     fn as_ref(&self) -> &[Slot] {
         unsafe { self.start.as_ref() }
     }
 }
 
-impl AsMut<[Slot]> for SlotVec {
+impl AsMut<[Slot]> for CNode {
     fn as_mut(&mut self) -> &mut [Slot] {
         unsafe {
             self.start.as_mut()
@@ -90,9 +82,9 @@ impl AsMut<[Slot]> for SlotVec {
 }
 
 
-unsafe impl Send for SlotVec {}
+unsafe impl Send for CNode {}
 
-unsafe impl Sync for SlotVec {}
+unsafe impl Sync for CNode {}
 
 
 mod test {

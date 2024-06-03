@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
-use aster_frame::cpu::{CpuException, UserContext};
+use aster_frame::cpu::{CpuException, CpuExceptionInfo, UserContext};
+use aster_frame::prelude::Vaddr;
 
 /// We can't handle most exceptions, just send self a fault signal before return to user space.
 pub fn handle_exception(context: &UserContext) {
@@ -10,49 +11,52 @@ pub fn handle_exception(context: &UserContext) {
     // let current = current!();
     // let root_vmar = current.root_vmar();
 
-    match *exception {
-        // PAGE_FAULT => handle_page_fault(trap_info),
+    match exception {
+        PAGE_FAULT => handle_page_fault(trap_info),
         _ => {
             // We current do nothing about other exceptions
             error!("exception rip: 0x{:x}", context.rip());
+            error!("exception! {:?}",exception);
             // generate_fault_signal(trap_info);
         }
     }
 }
 
-// fn handle_page_fault(trap_info: &CpuExceptionInfo) {
-//     const PAGE_NOT_PRESENT_ERROR_MASK: usize = 0x1 << 0;
-//     const WRITE_ACCESS_MASK: usize = 0x1 << 1;
-//     let page_fault_addr = trap_info.page_fault_addr as Vaddr;
-//     trace!(
-//         "page fault error code: 0x{:x}, Page fault address: 0x{:x}",
-//         trap_info.error_code,
-//         page_fault_addr
-//     );
-//     let not_present = trap_info.error_code & PAGE_NOT_PRESENT_ERROR_MASK == 0;
-//     let write = trap_info.error_code & WRITE_ACCESS_MASK != 0;
-//     if not_present || write {
-//         // If page is not present or due to write access, we should ask the vmar try to commit this page
-//         let current = current!();
-//         let root_vmar = current.root_vmar();
-//         if let Err(e) = root_vmar.handle_page_fault(page_fault_addr, not_present, write) {
-//             error!(
-//                 "page fault handler failed: addr: 0x{:x}, err: {:?}",
-//                 page_fault_addr, e
-//             );
-//             panic!("failed to handle page fault");
-//             // generate_fault_signal(trap_info);
-//         } else {
-//             // ensure page fault is successfully handled
-//             // FIXME: this check can be removed
-//             let vm_space = root_vmar.vm_space();
-//             let _: u8 = vm_space.read_val(page_fault_addr).unwrap();
-//         }
-//     } else {
-//         // Otherwise, the page fault cannot be handled
-//         generate_fault_signal(trap_info);
-//     }
-// }
+fn handle_page_fault(trap_info: &CpuExceptionInfo) {
+    const PAGE_NOT_PRESENT_ERROR_MASK: usize = 0x1 << 0;
+    const WRITE_ACCESS_MASK: usize = 0x1 << 1;
+    let page_fault_addr = trap_info.page_fault_addr as Vaddr;
+    trace!(
+        "page fault error code: 0x{:x}, Page fault address: 0x{:x}",
+        trap_info.error_code,
+        page_fault_addr
+    );
+    let not_present = trap_info.error_code & PAGE_NOT_PRESENT_ERROR_MASK == 0;
+    let write = trap_info.error_code & WRITE_ACCESS_MASK != 0;
+    if not_present || write {
+        error!("not present {}, write {}", not_present, write);
+        // If page is not present or due to write access, we should ask the vmar try to commit this page
+        // let current = current!();
+        // let root_vmar = current.root_vmar();
+        // if let Err(e) = root_vmar.handle_page_fault(page_fault_addr, not_present, write) {
+        //     error!(
+        //         "page fault handler failed: addr: 0x{:x}, err: {:?}",
+        //         page_fault_addr, e
+        //     );
+        //     panic!("failed to handle page fault");
+        //     // generate_fault_signal(trap_info);
+        // } else {
+        //     // ensure page fault is successfully handled
+        //     // FIXME: this check can be removed
+        //     let vm_space = root_vmar.vm_space();
+        //     let _: u8 = vm_space.read_val(page_fault_addr).unwrap();
+        // }
+    } else {
+        // Otherwise, the page fault cannot be handled
+        // generate_fault_signal(trap_info);
+        todo!()
+    }
+}
 //
 // /// generate a fault signal for current process.
 // fn generate_fault_signal(_trap_info: &CpuExceptionInfo) {

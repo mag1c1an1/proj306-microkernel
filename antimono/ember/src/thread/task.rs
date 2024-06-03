@@ -13,7 +13,7 @@ use super::{exception::handle_exception, Thread};
 
 pub fn create_new_user_task(user_space: Arc<UserSpace>, thread_ref: Weak<Thread>) -> Arc<Task> {
     fn user_task_entry() {
-        let current_thread = current_thread!();
+        // let current_thread = current_thread!();
         let current_task = Task::current();
         let user_space = current_task
             .user_space()
