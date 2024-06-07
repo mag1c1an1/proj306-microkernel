@@ -22,6 +22,8 @@ pub mod object;
 pub mod root_server;
 mod sched;
 
+pub mod boot_info;
+
 pub fn init() {
     sched::init();
 }

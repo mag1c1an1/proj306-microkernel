@@ -2,3 +2,6 @@
 	path = asterinas
 	url = https://github.com/mag1c1an1/asterinas.git
 	branch = ember
+[submodule "antimono/crates/rust-sel4"]
+	path = antimono/crates/rust-sel4
+	url = https://github.com/seL4/rust-sel4.git

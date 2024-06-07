@@ -5,6 +5,7 @@ use crate::error::{EmberError, Sel4Errno};
 use crate::sel4::SeL4ABI;
 use crate::sel4::syscall_id::*;
 use crate::syscall::sel4_syscalls::{sel4_kernel_putchar, sel4_set_tls_base};
+use crate::syscall::unknown_syscall::DebugPutChar;
 
 pub mod sel4_syscalls;
 // pub mod utils;
@@ -15,6 +16,12 @@ pub mod sel4_syscalls;
 // use log::debug;
 // use crate::common::fault::{FaultType, lookup_fault_t, seL4_Fault_t};
 // use crate::common::sel4_config::tcbCaller;
+
+
+// figure out why no this syscall
+pub mod unknown_syscall {
+    pub const DebugPutChar: i32 = -9i32;
+}
 
 // pub const SysCall: isize = -1;
 // pub const SysReplyRecv: isize = -2;

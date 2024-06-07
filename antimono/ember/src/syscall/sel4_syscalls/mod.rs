@@ -8,6 +8,7 @@ use crate::{EmberResult, log_syscall_entry};
 use crate::sel4::SeL4ABI;
 use crate::sel4::syscall_id::*;
 use crate::syscall::SyscallReturn;
+use crate::syscall::unknown_syscall::DebugPutChar;
 
 pub mod invocation;
 
@@ -20,6 +21,7 @@ pub fn sel4_set_tls_base(user_context: &mut UserContext) -> EmberResult<SyscallR
 }
 
 // TODO may change this
+#[cfg(debug_assertions)]
 pub fn sel4_kernel_putchar(user_context: &mut UserContext) -> EmberResult<SyscallReturn> {
     log_syscall_entry!(DebugPutChar);
     let c = user_context.cap_reg() as u8 as char;

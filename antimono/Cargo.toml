@@ -18,5 +18,5 @@ log = "0.4"
 ember = { path = "ember" }
 
 [workspace]
-members = ["ember", "crates/sel4", "crates/sel4-rustfmt-helper", "usertest"]
+members = ["ember", "usertest", "crates/rust-sel4/crates/sel4", "crates/rust-sel4/crates/sel4/bitfield-ops", "sel4-install"]
 exclude = ["target/osdk/base"]

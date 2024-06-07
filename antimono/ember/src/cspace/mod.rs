@@ -18,11 +18,9 @@ impl Slot {
     pub fn is_empty(&self) -> bool {
         self.0.raw_cap.typ() == (CapType::Null as usize)
     }
-
     pub fn derive(&mut self, cap: &RawCap) -> EmberResult<RawCap> {
         todo!()
     }
-
     pub fn arch_derive(&mut self, cap: &RawCap) -> EmberResult<RawCap> {
         todo!()
     }
@@ -62,6 +60,7 @@ impl CNode {
         todo!()
     }
     pub fn insert_new_cap() { todo!() }
+    /// move
     pub fn mov() {}
     pub fn swap() {}
 }

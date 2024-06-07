@@ -28,6 +28,17 @@
       <sourceFolder url="file://$MODULE_DIR$/antimono/ember/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/antimono/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/antimono/usertest/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4-rustfmt-helper/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/bitfield-ops/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/bitfield-parser/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/build-env/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/config/data/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/config/generic/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/config/generic/types/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/config/macros/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/config/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/antimono/crates/rust-sel4/crates/sel4/sys/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/antimono/target" />
     </content>
     <orderEntry type="inheritedJdk" />
