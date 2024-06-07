@@ -1,5 +1,5 @@
 use crate::bit;
-use crate::sel4::{seL4_SlotBits, seL4_TCBBits};
+use crate::sel4::sys::{seL4_SlotBits, seL4_TCBBits};
 
 pub const TCB_SIZE_BITS: usize = seL4_TCBBits as usize - 1usize;
 pub const TCB_CNODE_RADIX: usize = 4;

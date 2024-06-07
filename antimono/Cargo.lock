@@ -292,6 +292,7 @@ dependencies = [
  "ktest",
  "log",
  "num_enum",
+ "pod",
  "sel4",
  "sel4-bitfield-ops",
  "spin 0.9.8",
@@ -893,6 +894,9 @@ dependencies = [
 [[package]]
 name = "sel4-install"
 version = "0.1.0"
+dependencies = [
+ "regex",
+]
 
 [[package]]
 name = "sel4-rustfmt-helper"

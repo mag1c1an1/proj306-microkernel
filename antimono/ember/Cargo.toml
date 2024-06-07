@@ -16,3 +16,4 @@ num_enum = { version = "0.7", default-features = false }
 spin = "0.9"
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 xmas-elf = "0.9"
+pod = { git = "https://github.com/asterinas/pod", rev = "d7dba56" }

@@ -89,7 +89,7 @@ pub fn load_elf(
     }
     Ok(UserImage {
         descs,
-        bounds: bounds.start as usize..bounds.end as usize,
+        bounds: round_down!(bounds.start as usize,seL4_PageBits)..round_up!(bounds.end as usize,seL4_PageBits),
         elf_load_info: ElfLoadInfo {
             entry_point: parsed_elf.entry_point()
         },

@@ -13,15 +13,16 @@ use aster_frame::cpu::UserContext;
 use aster_frame::sync::SpinLock;
 use aster_frame::task::{Task, TaskOptions};
 use aster_frame::user::UserSpace;
-use aster_frame::vm::{PageFlags, Vaddr, VmFrameVec, VmMapOptions, VmSpace};
+use aster_frame::vm::{PageFlags, Vaddr, VmAllocOptions, VmFrameVec, VmIo, VmMapOptions, VmSpace};
 use spin::Once;
 
-use sel4::sys::seL4_TCBBits;
-
 use crate::bit;
+use crate::boot_info::{BOOT_INFO, BootInfo, BootInfoBuilder};
 use crate::common::region::{Kaddr, Region};
 use crate::root_server::elf::{ElfLoadInfo, load_elf};
+use crate::sel4::sys::seL4_TCBBits;
 use crate::thread::{task, TcbObject, Thread};
+use crate::vspace::MemType;
 
 mod elf;
 
@@ -89,7 +90,25 @@ pub fn create_root_thread() {
         vm_space.map(desc.segment, &map).unwrap();
     }
 
+    // use addr explicitly
+    let frame = VmAllocOptions::new(1).alloc_single().expect("no memory");
+
+    let mut bi_builder = BootInfoBuilder::new();
+    let bi = BootInfo(bi_builder.build());
+
+    frame.write_val::<BootInfo>(0, &bi).expect("write failed");
+
+    let mut map = VmMapOptions::new();
+    // todo change this
+    map.addr(Some(ui.bounds.end)).flags(PageFlags::R);
+    let vm_vec = VmFrameVec::from_one_frame(frame);
+    let addr = vm_space.map(vm_vec.clone(), &map).unwrap();
+
+
+    BOOT_INFO.call_once(|| MemType::new(vm_vec));
+
     cpu_ctx.set_rip(ui.elf_load_info.entry_point() as _);
+    cpu_ctx.set_rdi(addr as _);
     // cpu_ctx.set_rdi(vptr);
     let user_space = Arc::new(UserSpace::new(vm_space.clone(), cpu_ctx));
     // let thread_name = Some(ThreadName::new_from_executable_path(executable_path)?);
@@ -102,6 +121,7 @@ pub fn create_root_thread() {
 
     thread.run();
 }
+
 
 mod test {
     use ktest::ktest;

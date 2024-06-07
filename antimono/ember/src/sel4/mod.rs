@@ -1,19 +1,18 @@
 use aster_frame::cpu::UserContext;
 
-pub use sel4::sys::*;
-
 pub mod register;
 pub mod tcb;
 pub mod cnode;
 
-
+pub mod sys {
+   pub use sel4::sys::*;
+}
 
 pub mod config {
     pub mod consts {
         pub use sel4::config::consts::*;
     }
 }
-
 
 pub trait SeL4ABI {
     fn syscall_num(&self) -> usize;

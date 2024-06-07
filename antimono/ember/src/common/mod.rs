@@ -2,12 +2,10 @@ pub use sel4::CNodeCapData;
 use sel4_bitfield_ops::Bitfield;
 
 pub mod region;
-
-
 pub type SeL4Bitfield<T, const N: usize> = Bitfield<[T; N], T>;
 
-/// This is strong Arch related
-/// Pointer in x86_64 pml4 is 48bit, and in sel4 it stored directly.
+/// This is strong Arch related.
+/// Pointer in x86_64 pml4 is 48bit, and in sel4 it was stored directly.
 /// If the 48th bit is 1, then sign extend.
 pub trait PtrSignedExt {
     const PTR_MASK: usize = 1 << 47;

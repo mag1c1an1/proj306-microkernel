@@ -6,7 +6,7 @@ use aster_frame::{
 
 use crate::{EmberResult, log_syscall_entry};
 use crate::sel4::SeL4ABI;
-use crate::sel4::syscall_id::*;
+use crate::sel4::sys::syscall_id::*;
 use crate::syscall::SyscallReturn;
 use crate::syscall::unknown_syscall::DebugPutChar;
 

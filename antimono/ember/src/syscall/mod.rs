@@ -3,7 +3,7 @@ use aster_frame::cpu::UserContext;
 use crate::EmberResult;
 use crate::error::{EmberError, Sel4Errno};
 use crate::sel4::SeL4ABI;
-use crate::sel4::syscall_id::*;
+use crate::sel4::sys::syscall_id::*;
 use crate::syscall::sel4_syscalls::{sel4_kernel_putchar, sel4_set_tls_base};
 use crate::syscall::unknown_syscall::DebugPutChar;
 

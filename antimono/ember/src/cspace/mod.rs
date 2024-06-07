@@ -94,7 +94,8 @@ mod test {
     use crate::bit;
     use crate::cspace::Slot;
     use crate::sel4::cnode::ROOT_CNODE_SIZE_BITS;
-    use crate::sel4::seL4_SlotBits;
+    use crate::sel4::sys::seL4_SlotBits;
+
 
     #[ktest]
     fn slot_size_test() {
