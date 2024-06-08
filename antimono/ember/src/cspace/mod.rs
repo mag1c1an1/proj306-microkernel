@@ -1,13 +1,21 @@
-use core::ptr::NonNull;
+use alloc::boxed::Box;
+use alloc::sync::Arc;
+use core::mem::ManuallyDrop;
+use core::ptr::slice_from_raw_parts_mut;
+
+use aster_frame::vm::{HasPaddr, VmFrameVec};
 
 use capability::Capability;
 
+use crate::common::region::paddr_to_kaddr;
 use crate::cspace::raw::{CapType, RawCap};
 use crate::cspace::raw::cte::CTE;
+use crate::cspace::raw::mdb::MdbNode;
 use crate::EmberResult;
+use crate::sel4::cnode::ROOT_CNODE_SIZE_BITS;
 
-mod capability;
-mod raw;
+pub mod capability;
+pub mod raw;
 
 #[repr(transparent)]
 #[derive(Debug, Default)]
@@ -38,18 +46,41 @@ impl Slot {
     pub fn set_empty(&mut self, cleanup_info: &RawCap) { todo!() }
     pub fn reduce_zombie(&mut self, immediate: bool) -> EmberResult<()> { todo!() }
     pub fn revoke(&mut self) -> EmberResult<()> { todo!() }
+    pub fn write_slot(&mut self, cap: RawCap) {
+        self.0.raw_cap = cap;
+        // init a new MdbNode
+        let mut mdb = MdbNode::default();
+        mdb.set_first_badged(1);
+        mdb.set_revocable(1);
+        self.0.mdb_node = mdb;
+    }
 }
 
 
-/// care about drop?
+/// slot's memory is in the inner
 #[derive(Debug)]
 pub struct CNode
 {
-    start: NonNull<[Slot]>,
-    _phantom: core::marker::PhantomData<[Slot]>,
+    mem: Arc<VmFrameVec>,
+    slots: ManuallyDrop<Box<[Slot]>>,
 }
 
 impl CNode {
+    pub unsafe fn new(mem: Arc<VmFrameVec>) -> Self {
+        let start = paddr_to_kaddr(mem.0[0].paddr());
+        let slice_ptr = slice_from_raw_parts_mut(start as *mut Slot, *ROOT_CNODE_SIZE_BITS);
+        let slots = Box::from_raw(slice_ptr);
+        Self {
+            mem,
+            slots: ManuallyDrop::new(slots),
+        }
+    }
+
+
+    pub fn write_slot(&mut self, index: usize, cap: RawCap) {
+        self.slots[index].write_slot(cap)
+    }
+
     pub fn get_slot(&self, index: usize) -> &Slot {
         &self.as_ref()[index]
     }
@@ -68,15 +99,13 @@ impl CNode {
 
 impl AsRef<[Slot]> for CNode {
     fn as_ref(&self) -> &[Slot] {
-        unsafe { self.start.as_ref() }
+        self.slots.as_ref()
     }
 }
 
 impl AsMut<[Slot]> for CNode {
     fn as_mut(&mut self) -> &mut [Slot] {
-        unsafe {
-            self.start.as_mut()
-        }
+        self.slots.as_mut()
     }
 }
 
@@ -93,13 +122,10 @@ mod test {
 
     use crate::bit;
     use crate::cspace::Slot;
-    use crate::sel4::cnode::ROOT_CNODE_SIZE_BITS;
     use crate::sel4::sys::seL4_SlotBits;
-
 
     #[ktest]
     fn slot_size_test() {
         assert_eq!(bit!(seL4_SlotBits), size_of::<Slot>());
-        assert_eq!(bit!(seL4_SlotBits as usize + ROOT_CNODE_SIZE_BITS), size_of::<[Slot; bit!(ROOT_CNODE_SIZE_BITS)]>())
     }
 }

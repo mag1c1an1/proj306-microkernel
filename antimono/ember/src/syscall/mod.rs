@@ -18,7 +18,7 @@ pub mod sel4_syscalls;
 // use crate::common::sel4_config::tcbCaller;
 
 
-// figure out why no this syscall
+// TODO remove this figure out why no this syscall
 pub mod unknown_syscall {
     pub const DebugPutChar: i32 = -9i32;
 }
@@ -352,7 +352,7 @@ macro_rules! log_syscall_entry {
             let syscall_name_str = stringify!($syscall_name);
             // let pid = $crate::current!().pid();
             // let tid = $crate::current_thread!().tid();
-            info!(
+            trace!(
                 // "[pid={}][tid={}][id={}][{}]",
                 "[syscall_id={}][{}]",
                 $syscall_name, syscall_name_str

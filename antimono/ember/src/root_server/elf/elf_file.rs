@@ -1,16 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
 
-use alloc::{
-    string::{String, ToString},
-    vec::Vec,
-};
-use core::ffi::CStr;
+use alloc::vec::Vec;
 use core::ops::Range;
 
 /// A wrapper of xmas_elf's elf parsing
 use xmas_elf::{
     header::{self, Header, HeaderPt1, HeaderPt2, HeaderPt2_, Machine_, Type_},
-    program::{self, ProgramHeader64},
+    program::ProgramHeader64,
 };
 
 use crate::common::region::Vaddr;
@@ -109,10 +105,12 @@ impl Elf {
         let mut start: u64 = 0x7fffffffffffffff;
         let mut end: u64 = 0;
         for header in &self.program_headers {
-            let sect_start = header.virtual_addr;
-            let sect_end = sect_start + header.mem_size;
-            start = start.min(sect_start);
-            end = end.max(sect_end);
+            if header.mem_size != 0 {
+                let sect_start = header.virtual_addr;
+                let sect_end = sect_start + header.mem_size;
+                start = start.min(sect_start);
+                end = end.max(sect_end);
+            }
         }
         start..end
     }

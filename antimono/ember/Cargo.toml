@@ -17,3 +17,5 @@ spin = "0.9"
 thiserror = { version = "1.0", package = "thiserror-core", default-features = false }
 xmas-elf = "0.9"
 pod = { git = "https://github.com/asterinas/pod", rev = "d7dba56" }
+lazy_static = "1.4.0"
+static_assertions = "1.1.0"

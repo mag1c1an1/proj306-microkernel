@@ -14,7 +14,8 @@
 use crate::define_bitfield_type;
 
 pub mod cte;
-mod mdb;
+pub mod mdb;
+
 
 // pub mod zombie;
 
@@ -84,7 +85,7 @@ pub enum CapType {
 // // 每个类型的capability的每个字段都实现了get和set方法。
 
 define_bitfield_type! {
-    RawCap, 2, 59..64 => {
+   RawCap, 2, 59..64 => {
         new_null_cap, CapType::Null as usize => {},
         new_cnode_cap, CapType::CNode as usize => {
             cnode_ptr, set_cnode_ptr, 1, 0..47, 1, true,

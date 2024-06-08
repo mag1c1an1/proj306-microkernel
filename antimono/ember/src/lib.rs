@@ -8,6 +8,7 @@ extern crate alloc;
 extern crate log;
 
 pub use error::EmberResult;
+use crate::root_server::SysLauncher;
 
 pub mod cspace;
 pub mod sel4;
@@ -30,5 +31,5 @@ pub fn init() {
 
 
 pub fn run_root_server() {
-    root_server::create_root_thread();
+    SysLauncher::new().launch()
 }

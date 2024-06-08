@@ -5,12 +5,14 @@ pub mod tcb;
 pub mod cnode;
 
 pub mod sys {
-   pub use sel4::sys::*;
+    pub use sel4::sys::*;
 }
 
 pub mod config {
     pub mod consts {
         pub use sel4::config::consts::*;
+
+        pub const USER_TOP: usize = 0x7FFFFFFFFFFF;
     }
 }
 

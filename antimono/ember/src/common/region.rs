@@ -7,6 +7,15 @@ pub use aster_frame::prelude::Vaddr;
 
 /// kernel virtual address (pptr_t in sel4)
 pub type Kaddr = usize;
+/// this is aster_frame's offset
+const KERNEL_OFFSET:usize = 0xffff_8000_0000_0000;
+pub fn paddr_to_kaddr(paddr: Paddr) -> Kaddr {
+    paddr + KERNEL_OFFSET
+}
+
+pub fn kaddr_to_paddr(kaddr: Kaddr) -> Paddr {
+    kaddr - KERNEL_OFFSET
+}
 
 /// region_t in sel4
 pub type Region = Range<Kaddr>;

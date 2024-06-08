@@ -61,22 +61,33 @@ macro_rules! mask {
 
 #[macro_export]
 macro_rules! round_down {
+    ($n:expr) => {{
+        ((($n) >> ($crate::sel4::sys::seL4_PageBits)) << ($crate::sel4::sys::seL4_PageBits))
+    }};
     ($n:expr,$b:expr) => {{
         ((($n) >> ($b)) << ($b))
     }};
 }
 
 #[macro_export]
+// default is seL4_PageBits
 macro_rules! round_up {
+    ($n:expr) => {{
+    ((((( $ n) - 1usize) >> ( $crate::sel4::sys::seL4_PageBits)) + 1usize) << ( $crate::sel4::sys::seL4_PageBits))
+    }};
     ($n:expr,$b:expr) => {{
-        ((((($n) - 1usize) >> ($b)) + 1usize) << ($b))
+    ((((( $ n) - 1usize) >> ( $ b)) + 1usize) << ( $ b))
     }};
 }
 
+/// default is page size
 #[macro_export]
 macro_rules! is_aligned {
+    ($n:expr) => {{
+        $n & crate::mask!($crate::sel4::sys::seL4_PageBits) == 0
+    }};
     ($n:expr,$b:expr) => {{
-        $n & mask!($b) == 0
+        $n & crate::mask!($b) == 0
     }};
 }
 

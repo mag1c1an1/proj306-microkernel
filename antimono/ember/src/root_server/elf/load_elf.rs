@@ -4,10 +4,12 @@
 //! When create a process from elf file, we will use the elf_load_info to construct the VmSpace
 
 
+use alloc::collections::VecDeque;
 use alloc::vec;
 use alloc::vec::Vec;
+use core::ops::Range;
 
-use aster_frame::vm::{PageFlags, VmAllocOptions, VmIo, VmMapOptions, VmSpace};
+use aster_frame::vm::{PAGE_SIZE, PageFlags, VmAllocOptions, VmFrame, VmFrameVec, VmIo, VmMapOptions, VmSpace};
 use xmas_elf::program;
 use xmas_elf::program::ProgramHeader64;
 
@@ -19,16 +21,14 @@ use crate::error::EmberError;
 use crate::root_server::{SegmentDesc, UserImage};
 use crate::root_server::elf::elf_file::Elf;
 
-/// Loads elf to the process vm.
-///
-/// This function will map elf segments and
-/// initialize process init stack.
-pub fn load_elf(
+pub fn create_user_image(
     elf_binary: &[u8],
+    ui_bounds: Range<Vaddr>,
+    parsed_elf: &Elf,
 ) -> EmberResult<UserImage> {
-    let parsed_elf = Elf::parse_elf(elf_binary)?;
-    let bounds = parsed_elf.memory_bounds();
     let mut descs = Vec::new();
+    let phys = VmAllocOptions::new(ui_bounds.len() / PAGE_SIZE).is_contiguous(true).alloc()?.0;
+    let mut deque = VecDeque::from(phys);
     for ph in &parsed_elf.program_headers {
         let typ = ph.get_type().map_err(|s| EmberError::Other(s))?;
         if typ == program::Type::Load {
@@ -40,13 +40,14 @@ pub fn load_elf(
             let file_size = ph.file_size as usize;
             let virtual_addr = ph.virtual_addr as usize;
             let vmap_start =
-                round_down!(virtual_addr, seL4_PageBits);
-            let vmap_end = round_up!((virtual_addr + ph.mem_size as usize),seL4_PageBits);
+                round_down!(virtual_addr);
+            let vmap_end = round_up!((virtual_addr + ph.mem_size as usize));
             let vmo_size = vmap_end - vmap_start;
             // align 4096
-            debug_assert!(vmo_size % bit!(seL4_PageBits) == 0);
-            let vm_seg = VmAllocOptions::new(vmo_size / bit!(seL4_PageBits)).is_contiguous(true).alloc()?;
-            debug_assert!(vm_seg.nbytes() == vmo_size);
+            assert_eq!(vmo_size % PAGE_SIZE, 0);
+            let n_frames = vmo_size / PAGE_SIZE;
+            let vm_seg = VmFrameVec(deque.drain(0..n_frames).collect::<Vec<_>>());
+            assert_eq!(vm_seg.nbytes(), vmo_size);
 
             // Write zero as paddings. There are head padding and tail padding.
             // Head padding: if the segment's virtual address is not page-aligned,
@@ -55,7 +56,7 @@ pub fn load_elf(
             // then the bytes that are not backed up by file content should be zeros.(usually .data/.bss sections).
 
             // Head padding.
-            let page_offset = file_offset % bit!(seL4_PageBits);
+            let page_offset = file_offset % PAGE_SIZE;
             if page_offset != 0 {
                 let buffer = vec![0u8; page_offset];
                 vm_seg.write_bytes(0, &buffer)?;
@@ -64,7 +65,7 @@ pub fn load_elf(
             let vm_seg_bytes = vm_seg.nbytes();
             let tail_padding_offset = file_size + page_offset;
             if vm_seg_bytes > tail_padding_offset {
-                let buffer = vec![0u8; (vm_seg_bytes - tail_padding_offset) % bit!(seL4_PageBits)];
+                let buffer = vec![0u8; (vm_seg_bytes - tail_padding_offset) % PAGE_SIZE];
                 vm_seg.write_bytes(tail_padding_offset, &buffer)?;
             }
 
@@ -76,7 +77,7 @@ pub fn load_elf(
 
             vm_seg.write_slice(page_offset, slice)?;
 
-            debug_assert!(file_offset % bit!(seL4_PageBits) == virtual_addr % bit!(seL4_PageBits));
+            debug_assert!(file_offset % PAGE_SIZE == virtual_addr % PAGE_SIZE);
 
             // build map info but do not map
             let flags = parse_segment_perm(ph.flags);
@@ -89,7 +90,7 @@ pub fn load_elf(
     }
     Ok(UserImage {
         descs,
-        bounds: round_down!(bounds.start as usize,seL4_PageBits)..round_up!(bounds.end as usize,seL4_PageBits),
+        ui_bounds,
         elf_load_info: ElfLoadInfo {
             entry_point: parsed_elf.entry_point()
         },

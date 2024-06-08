@@ -3,4 +3,4 @@
 pub mod elf_file;
 pub mod load_elf;
 
-pub use load_elf::{load_elf, ElfLoadInfo};
+pub use load_elf::{create_user_image, ElfLoadInfo};
