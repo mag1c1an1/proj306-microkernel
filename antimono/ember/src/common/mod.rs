@@ -2,7 +2,8 @@ pub use sel4::CNodeCapData;
 use sel4_bitfield_ops::Bitfield;
 
 pub mod region;
-pub type SeL4Bitfield<T, const N: usize> = Bitfield<[T; N], T>;
+pub mod bit_field;
+pub type SeL4Bitfield<T, const N: usize> = bit_field::Bitfield<[T; N], T>;
 
 /// This is strong Arch related.
 /// Pointer in x86_64 pml4 is 48bit, and in sel4 it was stored directly.

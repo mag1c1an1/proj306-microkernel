@@ -203,6 +203,8 @@ impl SysLauncher {
             let frames = Arc::new(VmAllocOptions::new(bit!(cnode_size_bits) / PAGE_SIZE).is_contiguous(true).alloc().unwrap());
             Arc::new(Mutex::new(CNode::new(frames)))
         };
+        let ptr = Arc::as_ptr(&cnode) as usize;
+        error!("0x{:x}",ptr);
         let root_cnode_cap = RawCap::new_cnode_cap(
             Arc::as_ptr(&cnode) as usize,
             *ROOT_CNODE_SIZE_BITS,

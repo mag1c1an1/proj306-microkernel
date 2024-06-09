@@ -1,16 +1,3 @@
-// use crate::{
-//     plus_define_bitfield,
-//     sel4::{
-//         seL4_EndpointBits, seL4_MsgMaxExtraCaps, seL4_NotificationBits, seL4_ReplyBits,
-//         seL4_SlotBits,
-//         utils::{convert_to_mut_type_ref, pageBitsForSize},
-//         wordBits, PT_SIZE_BITS,
-//     },
-//     MASK,
-// };
-
-// use super::{exception::exception_t, vspace::pptr_t};
-
 use crate::define_bitfield_type;
 
 pub mod cte;
@@ -80,25 +67,107 @@ pub enum CapType {
     IOPort = 19,
     IOPortControl = 31,
 }
-//
-// // cap_t 表示一个capability，由两个机器字组成，包含了类型、对象元数据以及指向内核对象的指针。
-// // 每个类型的capability的每个字段都实现了get和set方法。
 
+// shift field_range offset signed
 define_bitfield_type! {
    RawCap, 2, 59..64 => {
         new_null_cap, CapType::Null as usize => {},
+        new_untyped_cap, CapType::Untyped as usize => {
+            untyped_ptr, set_untyped_ptr, 0, 0..48, 0, true,
+            block_size,  set_untyped_block_size, 0,64..70, 0, false,
+            is_device, set_untyped_is_device, 0, 70..71, 0, false,
+            free_index,  set_untyped_free_index, 0, 80..128, 0, false,
+        },
+        new_endpoint_cap, CapType::Endpoint as usize => {
+            ep_ptr,  set_ep_ptr, 0, 0..48, 0, true,
+            can_send,  set_ep_can_send, 0, 55..56, 0, false,
+            can_receive,  set_ep_can_receive, 0, 56..57, 0, false,
+            can_grant,  set_ep_can_grant, 0, 57..58, 0, false,
+            can_grant_reply,  set_ep_can_grant_reply, 0, 58..59, 0, false,
+            ep_badge,  set_ep_badge, 0, 64..128, 0, false,
+        },
+        new_notification_cap, CapType::Notification as usize => {
+            ntfn_ptr,  set_nf_ptr, 0, 0..48, 0, true,
+            ntfn_can_send,  set_nf_can_send, 0, 57..58, 0, false,
+            ntfn_can_receive,  set_nf_can_receive, 0, 58..59, 0, false,
+            ntfn_badge,  set_nf_badge, 0, 64..128, 0, false
+        },
+        new_reply_cap, CapType::Reply as usize => {
+            reply_master,  set_reply_master, 0, 0..1, 0, false,
+            reply_can_grant,  set_reply_can_grant, 0, 1..2, 0, false,
+            reply_tcb_ptr,  set_reply_tcb_ptr, 0, 64..128, 0, false
+        },
         new_cnode_cap, CapType::CNode as usize => {
             cnode_ptr, set_cnode_ptr, 1, 0..47, 1, true,
-            cnode_radix,set_cnode_radix, 0, 47..53, 0, false,
+            cnode_radix, set_cnode_radix, 0, 47..53, 0, false,
             cnode_guard_size, set_cnode_guard_size, 0, 53..59, 0, false,
             cnode_guard, set_cnode_guard, 0, 64..128, 0, false,
-       }
+       },
+        new_thread_cap, CapType::Thread as usize => {
+            thread_tcb_ptr,  set_thread_tcb_ptr, 0, 0..48, 0, true,
+        },
+        new_irq_control_cap, CapType::IrqControl as usize => {},
+        new_irq_handler_cap, CapType::IrqHandler as usize => {
+            irq, set_irq_handler, 0, 64..76, 0, false,
+        },
+        new_zombie_cap, CapType::Zombie as usize => {
+            zombie_type,  set_zombie_type, 0, 0..7, 0, false,
+            zombie_id,  set_zombie_id, 0, 64..128, 0, false,
+        },
+        new_domain_cap, CapType::Domain as usize => {},
+        new_frame_cap, CapType::Frame as usize => {
+            frame_is_device,  set_frame_is_device, 0, 4..5, 0, false,
+            frame_vm_rights,  set_frame_vm_rights, 0, 5..7, 0, false,
+            frame_mapped_address,  set_frame_mapped_address, 0, 7..55, 0, true,
+            frame_map_type, set_frame_map_type, 0, 55..57, 0, false,
+            frame_size,  set_frame_size, 0, 57..59, 0, false,
+            frame_base_ptr,  set_frame_base_ptr, 0, 64..112, 0, true,
+            frame_mapped_asid,  set_frame_mapped_asid, 0, 112..128, 0, false,
+        },
+        new_page_table_cap,CapType::PageTable as usize => {
+            // only store 28 bits
+            pt_mapped_address,  set_pt_mapped_address, 20, 1..29, 20, true,
+            pt_is_mapped,  set_pt_is_mapped, 0, 49..50, 0, false,
+            pt_base_ptr,  set_pt_base_ptr, 0, 64..112, 0, true,
+            pt_mapped_asid,  set_pt_mapped_asid, 0, 112..124, 0, false,
+        },
+        new_page_directory_cap, CapType::PageDirectory as usize => {
+            // store 19 bits
+            pd_mapped_address,  set_pd_mapped_address, 29, 1..20, 29, true,
+            pd_is_mapped,  set_pd_is_mapped, 0, 49..50, 0, false,
+            pd_base_ptr,  set_pd_base_ptr, 0, 64..112, 0, true,
+            pd_mapped_asid,  set_pd_mapped_asid, 0, 112..124, 0,false,
+        },
+        new_pdpt_cap, CapType::PDPT as usize => {
+            // store 10 bits
+            pdpt_mapped_address,  set_pdpt_mapped_address, 38, 10..20, 38, true,
+            pdpt_is_mapped,  set_pdpt_is_mapped, 0, 58..59, 0, false,
+            pdpt_base_ptr,  set_pdpt_base_ptr, 0, 64..112, 0, true,
+            pdpt_mapped_asid,  set_pdpt_mapped_asid, 0,112..124, 0, false,
+        },
+        new_pml4_cap, CapType::PDPT as usize => {
+            pml4_mapped_asid,  set_pml4_mapped_asid, 0, 0..12, 0, false,
+            pml4_is_mapped,  set_pml4_is_mapped, 0, 58..59, 0, false,
+            pml4_base_ptr,  set_pml4_base_ptr, 0, 64..128, 0, false,
+        },
+        new_asid_control_cap, CapType::CapASIDControl as usize => {},
+        new_asid_pool_cap, CapType::ASIDPool as usize => {
+            asid_pool,  set_asid_pool, 11, 0..37, 11, true,
+            asid_base,  set_asid_base, 0, 47..59, 0, false,
+        },
+        new_io_port_cap, CapType::IOPort as usize => {
+            io_port_last_port,  set_io_port_last_port, 0, 24..40, 0, false,
+            io_port_first_port,  set_io_port_first_port, 0, 40..56, 0, false,
+        },
+        new_io_port_control_cap, CapType::IOPortControl as usize => {
+        }
     }
 }
 
 mod test {
     use ktest::ktest;
 
+    use crate::common::SeL4Bitfield;
     use crate::cspace::raw::{CapType, RawCap};
 
     #[ktest]
@@ -114,84 +183,25 @@ mod test {
 
     #[ktest]
     fn cnode_cap_test() {
-        let ptr = 0x8000_0000_ffff;
+        let ptr = 0xffff_8000_0412_ea90;
         let radix = 2;
         let guard_size = 3;
         let guard = 4;
         let cnode_cap = RawCap::new_cnode_cap(ptr, radix, guard_size, guard);
-        assert_eq!((ptr >> 1 << 1) | (0xffff << 48), cnode_cap.cnode_ptr());
+        assert_eq!((ptr >> 1 << 1), cnode_cap.cnode_ptr());
         assert_eq!(radix, cnode_cap.cnode_radix());
         assert_eq!(guard_size, cnode_cap.cnode_guard_size());
         assert_eq!(guard, cnode_cap.cnode_guard());
+        assert_eq!(cnode_cap.typ(), CapType::CNode as usize);
     }
+
+    #[ktest]
+    fn untyped_cap_test() {}
 }
 
 // plus_define_bitfield! {
 //     cap_t, 2, 0, 59, 5 => {
 //         new_null_cap, CapType::Null as usize => {},
-//         new_untyped_cap, CapType::Untyped as usize => {
-//             capPtr, get_untyped_ptr, set_untyped_ptr, 0, 0, 48, 0, true,
-//             capFreeIndex, get_untyped_free_index, set_untyped_free_index, 1, 16, 48, 0, false,
-//             capIsDevice, get_untyped_is_device, set_untyped_is_device, 1, 6, 1, 0, false,
-//             capBlockSize, get_untyped_block_size, set_untyped_block_size, 1, 0, 6, 0, false
-//         },
-//         new_endpoint_cap, CapType::Endpoint as usize => {
-//             capCanGrantReply, get_ep_can_grant_reply, set_ep_can_grant_reply, 0, 58, 1, 0, false,
-//             capCanGrant, get_ep_can_grant, set_ep_can_grant, 0, 57, 1, 0, false,
-//             capCanSend, get_ep_can_send, set_ep_can_send, 0, 55, 1, 0, false,
-//             capCanReceive, get_ep_can_receive, set_ep_can_receive, 0, 56, 1, 0, false,
-//             capEPPtr, get_ep_ptr, set_ep_ptr, 0, 0, 48, 0, true,
-//             capEPBadge, get_ep_badge, set_ep_badge, 1, 0, 64, 0, false
-//         },
-//         new_notification_cap, CapType::Notification as usize => {
-//             capNtfnCanReceive, get_nf_can_receive, set_nf_can_receive, 0, 58, 1, 0, false,
-//             capNtfnCanSend, get_nf_can_send, set_nf_can_send, 0, 57, 1, 0, false,
-//             capNtfnPtr, get_nf_ptr, set_nf_ptr, 0, 0, 48, 0, true,
-//             capNtfnBadge, get_nf_badge, set_nf_badge, 1, 0, 64, 0, false
-//         },
-//         new_reply_cap, CapType::Reply as usize => {
-//             capReplyCanGrant, get_reply_can_grant, set_reply_can_grant, 0, 1, 1, 0, false,
-//             capReplyMaster, get_reply_master, set_reply_master, 0, 0, 1, 0, false,
-//             capTCBPtr, get_reply_tcb_ptr, set_reply_tcb_ptr, 1, 0, 64, 0, false
-//         },
-//         new_cnode_cap, CapType::CNode as usize => {
-//             capCNodeRadix, get_cnode_radix, set_cnode_radix, 0, 47, 6, 0, false,
-//             capCNodeGuardSize, get_cnode_guard_size, set_cnode_guard_size, 0, 53, 6, 0, false,
-//             capCNodePtr, get_cnode_ptr, set_cnode_ptr, 0, 0, 47, 1, true,
-//             capCNodeGuard, get_cnode_guard, set_cnode_guard, 1, 0, 64, 0, false
-//         },
-//         new_thread_cap, CapType::Thread as usize => {
-//             capTCBPtr, get_tcb_ptr, set_tcb_ptr, 0, 0, 48, 0, true
-//         },
-//         new_irq_control_cap, CapType::IrqControl as usize => {},
-//         new_irq_handler_cap, CapType::IrqHandler as usize => {
-//             capIRQ, get_irq_handler, set_irq_handler, 1, 0, 12, 0, false
-//         },
-//         new_zombie_cap, CapType::Zombie as usize => {
-//             capZombieType, get_zombie_type, set_zombie_type, 0, 0, 7, 0, false,
-//             capZombieID, get_zombie_id, set_zombie_id, 1, 0, 64, 0, false
-//         },
-//         new_domain_cap, CapType::Domain as usize => {},
-//         new_frame_cap, CapType::Frame as usize => {
-//             capFSize, get_frame_size, set_frame_size, 0, 57, 2, 0, false,
-//             capFMapType,get_frame_map_type, set_frame_map_type, 0, 55, 2, 0, false,
-//             capFMappedAddress, get_frame_mapped_address, set_frame_mapped_address, 0, 7, 48, 0, true,
-//             capFVMRights, get_frame_vm_rights, set_frame_vm_rights, 0, 5, 2, 0, false,
-//             capFIsDevice, get_frame_is_device, set_frame_is_device, 0, 4, 1, 0, false,
-//             capFMappedASID, get_frame_mapped_asid, set_frame_mapped_asid, 1, 48, 16, 0, false,
-//             capFBasePtr, get_frame_base_ptr, set_frame_base_ptr, 1, 0, 48, 0, true
-//         },
-//         new_asid_control_cap, CapType::CapASIDControl as usize => {},
-//         new_asid_pool_cap, CapType::ASIDPool as usize => {
-//             capASIDBase, get_asid_base, set_asid_base, 0, 43, 16, 0, false,
-//             capASIDPool, get_asid_pool, set_asid_pool, 0, 0, 37, 2, true
-//         },
-//         new_io_port_cap, CapType::IOPort as usize => {
-//             capIOPortFirstPort, get_io_port_first_port, set_io_port_first_port, 0, 40, 20, 0, false,
-//             capIOPortLastPort, get_io_port_last_port, set_io_port_last_port, 0, 0, 20, 0, false
-//         },
-//         new_io_port_control_cap, CapType::IOPortControl as usize => {
-//         }
 //     }
 // }
 //
