@@ -17,6 +17,9 @@ pub fn handle_exception(context: &UserContext) {
             // We current do nothing about other exceptions
             error!("exception rip: 0x{:x}", context.rip());
             error!("exception! {:?}",exception);
+            loop {
+
+            }
             // generate_fault_signal(trap_info);
         }
     }
@@ -35,6 +38,9 @@ fn handle_page_fault(trap_info: &CpuExceptionInfo) {
     let write = trap_info.error_code & WRITE_ACCESS_MASK != 0;
     if not_present || write {
         error!("not present {}, write {}", not_present, write);
+        loop {
+
+        }
         // If page is not present or due to write access, we should ask the vmar try to commit this page
         // let current = current!();
         // let root_vmar = current.root_vmar();

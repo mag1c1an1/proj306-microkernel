@@ -1,9 +1,15 @@
+use alloc::boxed::Box;
+use core::mem::ManuallyDrop;
+
 pub use sel4::CNodeCapData;
-use sel4_bitfield_ops::Bitfield;
 
 pub mod region;
 pub mod bit_field;
+pub mod raw;
+
 pub type SeL4Bitfield<T, const N: usize> = bit_field::Bitfield<[T; N], T>;
+/// this box  = Box::from_raw
+pub type MemRef<T> = ManuallyDrop<Box<T>>;
 
 /// This is strong Arch related.
 /// Pointer in x86_64 pml4 is 48bit, and in sel4 it was stored directly.
@@ -23,6 +29,7 @@ impl PtrSignedExt for usize {
         }
     }
 }
+
 
 #[cfg(ktest)]
 mod test {

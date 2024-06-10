@@ -104,7 +104,7 @@ macro_rules! bit {
 #[macro_export]
 macro_rules! max_free_index {
     ($e:expr) => {{
-        bit!($e - $crate::sel4::seL4_MinUntypedBits)
+        bit!($e - $crate::sel4::sys::seL4_MinUntypedBits as usize)
     }};
 }
 
@@ -220,7 +220,7 @@ macro_rules! define_bitfield_type {
                 )*
 
                 #[inline]
-                pub fn typ(&self) -> usize {
+                pub fn raw_typ(&self) -> usize {
                     self.0.get_bits::<usize>($type_range)
                 }
             }

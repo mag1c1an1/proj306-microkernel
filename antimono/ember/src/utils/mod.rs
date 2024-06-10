@@ -1,5 +1,6 @@
 #[macro_use]
 mod macros;
+use crate::sel4::sys::seL4_MinUntypedBits;
 
 // use crate::{
 //     sel4::{seL4_MinUntypedBits, CONFIG_ROOT_CNODE_SIZE_BITS},
@@ -15,8 +16,8 @@ mod macros;
 //     CONFIG_PT_LEVELS, PADDR_TOP, PPTR_BASE, PPTR_TOP,
 // };
 
-// pub fn MAX_FREE_INDEX(bits: usize) -> usize {
-//     BIT!(bits - seL4_MinUntypedBits)
+// pub fn max_free_index(bits: usize) -> usize {
+//     bit!(bits - seL4_MinUntypedBits as usize)
 // }
 
 #[inline]

@@ -21,7 +21,7 @@ asm-user:
   objdump -d images/root_task > asm/user.asm
 
 debug: 
-  cargo osdk run --enable-gdb --gdb-server-addr 127.0.0.1:1234
+  SEL4_PREFIX={{sel4_prefix}}  cargo osdk run  --target-arch x86_64 --enable-gdb --gdb-server-addr 127.0.0.1:1234
 
 copy-image:
   cd {{sel4_build_path}} && ninja

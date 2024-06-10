@@ -1,17 +1,20 @@
+use alloc::boxed::Box;
 use alloc::string::{String, ToString};
 use alloc::sync::{Arc, Weak};
 use core::mem::size_of;
-use core::ptr::NonNull;
 use core::sync::atomic::{AtomicU32, Ordering};
 
-use aster_frame::sync::Mutex;
+use aster_frame::sync::{Mutex, MutexGuard};
 use aster_frame::task::Task;
-use aster_frame::vm::VmSpace;
+use aster_frame::vm::{HasPaddr, VmFrameVec, VmSpace};
 
-use crate::bit;
-use crate::cspace::{CNode, Slot};
+use crate::{bit, EmberResult};
+use crate::common::MemRef;
+use crate::common::region::paddr_to_kaddr;
+use crate::cspace::{CNodeObject, Slot};
 use crate::sel4::tcb::{TCB_CNODE_ENTRIES, TCB_SIZE_BITS};
 use crate::thread::raw::{DebugRawTcb, RawTcb};
+use crate::thread::state::{AtomicThreadState, ThreadState};
 
 pub mod task;
 pub mod exception;
@@ -32,16 +35,18 @@ pub struct Thread {
     task: Arc<Task>,
     vm_space: Arc<VmSpace>,
     tcb_object: Mutex<TcbObject>,
+    atomic_thread_state: AtomicThreadState,
 }
 
 impl Thread {
-    pub fn new(task: Arc<Task>, tcb_object: TcbObject, vm_space: Arc<VmSpace>) -> Self {
+    pub fn new(task: Arc<Task>, tcb_object: TcbObject, vm_space: Arc<VmSpace>, state: ThreadState) -> Self {
         Thread {
             tid: allocate_tid(),
             name: String::new(),
             task,
             vm_space,
             tcb_object: Mutex::new(tcb_object),
+            atomic_thread_state: AtomicThreadState::new(state),
         }
     }
     pub fn current() -> Arc<Thread> {
@@ -54,9 +59,11 @@ impl Thread {
             .upgrade()
             .expect("[Internal Error] current thread cannot be None")
     }
-
     pub(in crate::thread) fn task(&self) -> &Arc<Task> {
         &self.task
+    }
+    pub fn tcb_object(&self) -> MutexGuard<TcbObject> {
+        self.tcb_object.lock()
     }
     pub fn tid(&self) -> Tid {
         self.tid
@@ -100,38 +107,40 @@ pub fn do_ipc_transfer() {}
 #[derive(Debug)]
 pub struct TcbObject
 {
-    inner: TcbObjectInner,
+    mem: VmFrameVec,
+    //
+    tcb_cnode: CNodeObject,
+    debug_raw_tcb: MemRef<DebugRawTcb>,
+    tcb: MemRef<RawTcb>,
 }
-
-#[derive(Debug)]
-struct TcbObjectInner {
-    tcb_cnode: NonNull<CNode>,
-    debug_tcb: NonNull<DebugRawTcb>,
-    tcb: NonNull<RawTcb>,
-}
-
-unsafe impl Send for TcbObject {}
-
-unsafe impl Sync for TcbObject {}
 
 
 impl TcbObject {
-    pub(crate) fn new(start: NonNull<u8>) -> Self {
-        unsafe {
-            let tcb_cnode = start.cast::<CNode>();
-            let tcb_cnode_size = TCB_CNODE_ENTRIES * size_of::<Slot>();
-            debug_assert!(tcb_cnode_size == 160, "wrong size");
-            let debug_tcb_size = bit!(TCB_SIZE_BITS) - tcb_cnode_size;
-            debug_assert!(debug_tcb_size == 864, "wrong size");
-            let debug_tcb = start.offset(tcb_cnode_size as isize).cast::<DebugRawTcb>();
-            let tcb = start.offset(bit!(TCB_SIZE_BITS) as isize).cast::<RawTcb>();
+    pub unsafe fn try_new(mem: VmFrameVec, raw_tcb: RawTcb) -> EmberResult<Self> {
+        let start = paddr_to_kaddr(mem.0[0].paddr());
+        let tcb_cnode = CNodeObject::try_new(mem.clone(), TCB_CNODE_ENTRIES)?;
+        // TCB_CNODE_SIZE_BITS
+        let tcb_cnode_size = TCB_CNODE_ENTRIES * size_of::<Slot>();
+        debug_assert!(tcb_cnode_size == 160, "wrong size");
+        let debug_tcb_size = bit!(TCB_SIZE_BITS) - tcb_cnode_size;
+        debug_assert!(debug_tcb_size == 864, "wrong size");
+        let debug_raw_tcb = MemRef::new(Box::from_raw((start + tcb_cnode_size) as *mut DebugRawTcb));
+        let tcb = MemRef::new(Box::from_raw((start + bit!(TCB_SIZE_BITS)) as *mut RawTcb)));
+        Ok(
             Self {
-                inner: TcbObjectInner {
-                    tcb_cnode,
-                    debug_tcb,
-                    tcb,
-                }
+                mem,
+                tcb_cnode,
+                debug_raw_tcb,
+                tcb,
             }
-        }
+        )
+    }
+    pub fn raw_tcb_mut(&mut self) -> &mut RawTcb {
+        self.tcb.as_mut()
+    }
+
+
+    pub fn tcb_cnode_mut(&mut self) -> &mut CNodeObject {
+        &mut self.tcb_cnode
     }
 }

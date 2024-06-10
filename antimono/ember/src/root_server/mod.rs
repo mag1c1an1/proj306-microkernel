@@ -24,7 +24,7 @@ use sel4::sys::seL4_PageTableBits;
 use crate::{bit, is_aligned, round_down, round_up};
 use crate::boot_info::{BOOT_INFO, BootInfo, BootInfoBuilder, BootState};
 use crate::common::region::{Kaddr, paddr_to_kaddr, Region};
-use crate::cspace::CNode;
+use crate::cspace::CNodeObject;
 use crate::cspace::raw::RawCap;
 use crate::root_server::elf::{create_user_image, ElfLoadInfo};
 use crate::root_server::elf::elf_file::Elf;
@@ -33,16 +33,15 @@ use crate::sel4::config::consts::USER_TOP;
 use crate::sel4::sys::{seL4_ASIDPoolBits, seL4_BootInfoFrameBits, seL4_BootInfoHeader, seL4_PageBits, seL4_SlotBits, seL4_TCBBits, seL4_VSpaceBits, seL4_WordBits};
 use crate::sel4::sys::seL4_RootCNodeCapSlots::{seL4_CapInitThreadCNode, seL4_CapIOPortControl};
 use crate::thread::{task, TcbObject, Thread};
+use crate::thread::raw::RawTcb;
+use crate::thread::state::ThreadState;
 use crate::vspace::MemType;
 
 mod elf;
 
-static ROOT_SERVER_MEM: Once<Mutex<RootServerControlBlock>> = Once::new();
-
-#[repr(C)]
 /// root_server_mem_t
 pub struct RootServerControlBlock {
-    pub cnode: Arc<Mutex<CNode>>,
+    pub cnode: Box<CNodeObject>,
     pub vspace: Arc<VmSpace>,
     pub asid_pool: Kaddr,
     pub ipc_buf: Kaddr,
@@ -112,30 +111,64 @@ impl SysLauncher {
         }
     }
     pub fn launch(mut self) {
-        let bi_vptr = self.create_root_thread();
+        let bi_vptr = unsafe { self.create_root_thread() };
         let Self {
-            boot_state,
+            mut boot_state,
             user_image,
             rscb,
             ..
         }
             = self;
+        // build tcb
+        let mut raw_tcb = RawTcb::default();
         let ui = user_image.unwrap();
         let rscb = rscb.unwrap();
-        let vm_space = rscb.vspace.clone();
+        let vm_space = rscb.vspace;
         for desc in ui.descs {
             let mut map = VmMapOptions::new();
             map.addr(Some(desc.start))
                 .flags(desc.pt_flags);
             vm_space.map(desc.segment, &map).unwrap();
         }
+
         // use addr explicitly
         let frame = VmAllocOptions::new(1).alloc_single().expect("no memory");
+        boot_state.bi_builder.init_thread_cnode_size_bits(*ROOT_CNODE_SIZE_BITS);
+        boot_state.bi_builder.empty(2..2);
         let bi = BootInfo(boot_state.bi_builder.build());
+
+        { // ipc
+            let frame = VmAllocOptions::new(1).alloc_single().expect("no memory");
+            let mut map = VmMapOptions::new();
+            // todo change this
+            let ipc_buf_vptr = bi.0.ipcBuffer as usize;
+            map.addr(Some(ipc_buf_vptr)).flags(PageFlags::RW);
+            let vm_vec = VmFrameVec::from_one_frame(frame);
+            let addr = vm_space.map(vm_vec.clone(), &map).unwrap();
+            assert_eq!(addr, ipc_buf_vptr);
+        }
+
+        // derive a copy of the IPC buffer cap for inserting
+
+        raw_tcb.priority = 255;
+        raw_tcb.mcp = 255;
+
+        let mut tcb_object = unsafe {
+            let size = round_up!(bit!(seL4_TCBBits));
+            let frames = VmAllocOptions::new(size / PAGE_SIZE).is_contiguous(true).alloc().unwrap();
+            TcbObject::try_new(frames,raw_tcb).unwrap()
+        };
+
+        tcb_object.tcb_cnode_mut().insert()
+
+
+
         frame.write_val::<BootInfo>(0, &bi).expect("write failed");
         let mut map = VmMapOptions::new();
         // todo change this
         map.addr(Some(bi_vptr)).flags(PageFlags::R);
+
+
         let vm_vec = VmFrameVec::from_one_frame(frame);
         let addr = vm_space.map(vm_vec.clone(), &map).unwrap();
         BOOT_INFO.call_once(|| MemType::new(vm_vec));
@@ -147,9 +180,8 @@ impl SysLauncher {
         // let thread_name = Some(ThreadName::new_from_executable_path(executable_path)?);
         let thread = Arc::new_cyclic(|thread_ref| unsafe {
             let task = task::create_new_user_task(user_space, thread_ref.clone());
-            let mut m = Box::new([0u8; bit!(seL4_TCBBits)]);
-            let tcb_object = TcbObject::new(NonNull::new(m.as_mut_ptr()).unwrap());
-            Thread::new(task, tcb_object, vm_space.clone())
+            // let tcb_object = TcbObject::new(NonNull::new(m.as_mut_ptr()).unwrap());
+            Thread::new(task, tcb_object, vm_space, ThreadState::Inactive)
         });
         thread.run();
     }
@@ -167,7 +199,7 @@ impl SysLauncher {
     }
     // alloc enough phy memory
     // basic user image +  ipc buffer + boot info
-    fn create_root_thread(&mut self) -> Vaddr {
+    unsafe fn create_root_thread(&mut self) -> Vaddr {
         info!("{}",self.elf_binary.len());
         let bounds = self.elf.memory_bounds();
         assert!(is_aligned!(bounds.start as usize));
@@ -180,6 +212,7 @@ impl SysLauncher {
         let ipc_buf_vptr = ui_bounds.end;
         let bi_frame_vptr = ipc_buf_vptr + bit!(seL4_PageBits);
         let extra_bi_frame_vptr = bi_frame_vptr + bit!(seL4_BootInfoFrameBits as usize);
+
         // vbe
         // acpi_rsdp
         // fb_info
@@ -194,29 +227,30 @@ impl SysLauncher {
         let ui = create_user_image(self.elf_binary, ui_bounds, &self.elf).unwrap();
         info!("{}",ui);
 
+        self.user_image = Some(ui);
+
         let cnode_size_bits = *ROOT_CNODE_SIZE_BITS + seL4_SlotBits as usize;
 
         assert!(cnode_size_bits > seL4_VSpaceBits as usize);
         // create root cnode
 
         let mut cnode = unsafe {
-            let frames = Arc::new(VmAllocOptions::new(bit!(cnode_size_bits) / PAGE_SIZE).is_contiguous(true).alloc().unwrap());
-            Arc::new(Mutex::new(CNode::new(frames)))
+            let frames = VmAllocOptions::new(bit!(cnode_size_bits) / PAGE_SIZE).is_contiguous(true).alloc().unwrap();
+            let len = bit!(*ROOT_CNODE_SIZE_BITS);
+            Box::new(CNodeObject::try_new(frames, len).unwrap())
         };
-        let ptr = Arc::as_ptr(&cnode) as usize;
-        error!("0x{:x}",ptr);
         let root_cnode_cap = RawCap::new_cnode_cap(
             Arc::as_ptr(&cnode) as usize,
             *ROOT_CNODE_SIZE_BITS,
             seL4_WordBits as usize - *ROOT_CNODE_SIZE_BITS,
             0,
         );
-        // cnode.lock().write_slot(seL4_CapInitThreadCNode as usize, root_cnode_cap);
+        cnode.lock().write_slot(seL4_CapInitThreadCNode as usize, root_cnode_cap);
         // self.maybe_alloc_extra_bi(seL4_VSpaceBits as usize, extra_bi_size_bits);
         // Caution: use vm space's addr not page table's root frame address
         let vspace = Arc::new(VmSpace::new());
 
-        self.rscb = Some(RootServerControlBlock {
+        self.rscb = RootServerControlBlock {
             cnode,
             vspace,
             asid_pool: 0,
@@ -225,7 +259,7 @@ impl SysLauncher {
             extra_bi: 0,
             tcb: 0,
             paging: Default::default(),
-        });
+        };
 
 
         // at this point we are up to creating 4k objects
@@ -355,6 +389,7 @@ impl SysLauncher {
         // init_core_state(initial);
 
         self.boot_state.bi_builder.num_io_pt_levels(usize::MAX);
+        self.boot_state.bi_builder.ipc_buffer(NonNull::new_unchecked(ipc_buf_vptr as *mut _));
 
         // create all of the untypeds. Both devices and kernel window memory
         // create_untypeds(&root_cnode_cap);

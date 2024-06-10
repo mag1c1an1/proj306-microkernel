@@ -1,3 +1,5 @@
+use num_enum::{FromPrimitive, TryFromPrimitive};
+
 use crate::define_bitfield_type;
 
 pub mod cte;
@@ -44,7 +46,7 @@ pub mod mdb;
 //
 //
 #[repr(usize)]
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, TryFromPrimitive)]
 pub enum CapType {
     Null = 0,
     Untyped = 2,
@@ -74,9 +76,9 @@ define_bitfield_type! {
         new_null_cap, CapType::Null as usize => {},
         new_untyped_cap, CapType::Untyped as usize => {
             untyped_ptr, set_untyped_ptr, 0, 0..48, 0, true,
-            block_size,  set_untyped_block_size, 0,64..70, 0, false,
-            is_device, set_untyped_is_device, 0, 70..71, 0, false,
-            free_index,  set_untyped_free_index, 0, 80..128, 0, false,
+            untyped_block_size,  set_untyped_block_size, 0,64..70, 0, false,
+            untyped_is_device, set_untyped_is_device, 0, 70..71, 0, false,
+            untyped_free_index,  set_untyped_free_index, 0, 80..128, 0, false,
         },
         new_endpoint_cap, CapType::Endpoint as usize => {
             ep_ptr,  set_ep_ptr, 0, 0..48, 0, true,
@@ -164,50 +166,8 @@ define_bitfield_type! {
     }
 }
 
-mod test {
-    use ktest::ktest;
-
-    use crate::common::SeL4Bitfield;
-    use crate::cspace::raw::{CapType, RawCap};
-
-    #[ktest]
-    fn cap_size_test() {
-        assert_eq!(core::mem::size_of::<RawCap>(), 16);
-    }
-
-    #[ktest]
-    fn null_cap_test() {
-        let cap = RawCap::new_null_cap();
-        assert_eq!(cap.typ(), CapType::Null as usize);
-    }
-
-    #[ktest]
-    fn cnode_cap_test() {
-        let ptr = 0xffff_8000_0412_ea90;
-        let radix = 2;
-        let guard_size = 3;
-        let guard = 4;
-        let cnode_cap = RawCap::new_cnode_cap(ptr, radix, guard_size, guard);
-        assert_eq!((ptr >> 1 << 1), cnode_cap.cnode_ptr());
-        assert_eq!(radix, cnode_cap.cnode_radix());
-        assert_eq!(guard_size, cnode_cap.cnode_guard_size());
-        assert_eq!(guard, cnode_cap.cnode_guard());
-        assert_eq!(cnode_cap.typ(), CapType::CNode as usize);
-    }
-
-    #[ktest]
-    fn untyped_cap_test() {}
-}
-
-// plus_define_bitfield! {
-//     cap_t, 2, 0, 59, 5 => {
-//         new_null_cap, CapType::Null as usize => {},
-//     }
-// }
-//
-// /// capability 的公用方法
-// impl cap_t {
-//     pub fn update_data(&self, preserve: bool, new_data: usize) -> Self {
+impl RawCap {
+    //     pub fn update_data(&self, preserve: bool, new_data: usize) -> Self {
 //         if self.isArchCap() {
 //             return self.clone();
 //         }
@@ -248,10 +208,10 @@ mod test {
 //         }
 //     }
 //
-//     pub fn get_cap_type(&self) -> CapTag {
-//         unsafe { core::mem::transmute::<u8, CapTag>(self.get_type() as u8) }
-//     }
-//
+    pub fn cap_type(&self) -> CapType {
+        CapType::try_from_primitive(self.raw_typ()).unwrap()
+    }
+    //
 //     pub fn get_cap_ptr(&self) -> usize {
 //         match self.get_cap_type() {
 //             CapTag::Untyped => self.get_untyped_ptr(),
@@ -298,287 +258,47 @@ mod test {
 //         }
 //     }
 //
-//     pub fn isArchCap(&self) -> bool {
-//         self.get_cap_type() as usize % 2 != 0
-//     }
-// }
+    pub fn is_arch_cap(&self) -> bool {
+        self.raw_typ() % 2 != 0
+    }
+
+    fn arch_is_revocable(&self, src_cap: &RawCap) -> bool {
+        if self.cap_type() == CapType::IOPort &&
+            src_cap.cap_type() == CapType::IOPortControl {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// self is derive
+    pub fn is_revocable(&self, src_cap: &RawCap) -> bool {
+        if self.is_arch_cap() {
+            return self.arch_is_revocable(src_cap);
+        }
+        match self.cap_type() {
+            CapType::Untyped => {
+                assert_eq!(self.cap_type(), src_cap.cap_type());
+                true
+            }
+            CapType::Endpoint =>
+                {
+                    assert_eq!(self.cap_type(), src_cap.cap_type());
+                    self.ep_badge() != src_cap.ep_badge()
+                }
+            CapType::Notification => {
+                assert_eq!(self.cap_type(), src_cap.cap_type());
+                self.nf_badge() != src_cap.nf_badge()
+            }
+            CapType::IrqHandler =>
+                {
+                    src_cap.cap_type() == CapType::IOPortControl
+                }
+            _ => false
+        }
+    }
+}
 //
-// // vm related capability
-// impl cap_t {
-//     #[inline]
-//     pub fn new_page_table_cap(
-//         capPTIsMapped: usize,
-//         capPTMappedAddress: usize,
-//         capPTMappedASID: usize,
-//         capPTBasePtr: usize,
-//     ) -> Self {
-//         let mut value = cap_t::default();
-//         value.words[0] =
-//             0 | (capPTIsMapped & 0x1) << 49 | (capPTMappedAddress & 0xfffffff00000) << 1;
-//         value.words[1] = 0 | (capPTMappedASID & 0xfff) << 48 | (capPTBasePtr & 0xffffffffffff) >> 0;
-//         value.words[0] |= ((CapTag::PageTable as usize & ((1usize << 5) - 1)) << 59);
-//         value
-//     }
-//     #[inline]
-//     pub fn get_pt_is_mapped(&self) -> usize {
-//         let mask = ((1u128 << 1) - 1) as usize;
-//         let mut ret = ((self.words[0] >> 49) & mask) << 0;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pt_is_mapped(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 1) - 1) as usize;
-//         self.words[0] &= !(mask << 49);
-//         self.words[0] |= (((new_field >> 0) & mask) << 49);
-//     }
-//     #[inline]
-//     pub fn get_pt_mapped_address(&self) -> usize {
-//         let mut ret = (self.words[0] & 0x1ffffffe00000) >> 1;
-//         if true && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pt_mapped_address(&mut self, new_field: usize) {
-//         self.words[0] &= !0x1ffffffe00000;
-//         self.words[0] |= (new_field << 1) & 0x1ffffffe00000;
-//     }
-//     #[inline]
-//     pub fn get_pt_mapped_asid(&self) -> usize {
-//         let mut ret = (self.words[1] & 0xfff000000000000) >> 48;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pt_mapped_asid(&mut self, new_field: usize) {
-//         self.words[1] &= !0xfff000000000000;
-//         self.words[1] |= (new_field << 48) & 0xfff000000000000;
-//     }
-//     #[inline]
-//     pub fn get_pt_base_ptr(&self) -> usize {
-//         let mask = ((1u128 << 48) - 1) as usize;
-//         let mut ret = ((self.words[1] >> 0) & mask) << 0;
-//         if true && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pt_base_ptr(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 48) - 1) as usize;
-//         self.words[1] &= !(mask << 0);
-//         self.words[1] |= (((new_field >> 0) & mask) << 0);
-//     }
-//     #[inline]
-//     pub fn new_page_directory_cap(
-//         cap_pd_is_mapped: usize,
-//         cap_pd_mapped_address: usize,
-//         cap_pd_mapped_asid: usize,
-//         cap_pd_base_ptr: usize,
-//     ) -> Self {
-//         let mut value = cap_t::default();
-//         value.words[0] =
-//             0 | (cap_pd_is_mapped & 0x1) << 49 | (cap_pd_mapped_address & 0xffffe0000000) << 1;
-//         value.words[1] = 0 | (cap_pd_mapped_asid & 0xfff) << 48 | (cap_pd_base_ptr & 0xffffffffffff) >> 0;
-//         value.words[0] |= ((CapTag::PageDirectory as usize & ((1usize << 5) - 1)) << 59);
-//         value
-//     }
-//     #[inline]
-//     pub fn get_pd_is_mapped(&self) -> usize {
-//         let mask = ((1u128 << 1) - 1) as usize;
-//         let mut ret = ((self.words[0] >> 49) & mask) << 0;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pd_is_mapped(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 1) - 1) as usize;
-//         self.words[0] &= !(mask << 49);
-//         self.words[0] |= (((new_field >> 0) & mask) << 49);
-//     }
-//     #[inline]
-//     pub fn get_pd_mapped_address(&self) -> usize {
-//         let mut ret = (self.words[0] & 0x1ffffc0000000) >> 1;
-//         if true && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pd_mapped_address(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 19) - 1) as usize;
-//         self.words[0] &= !0x1ffffc0000000;
-//         self.words[0] |= (new_field << 1) & 0x1ffffc0000000;
-//     }
-//     #[inline]
-//     pub fn get_pd_mapped_asid(&self) -> usize {
-//         let mask = ((1u128 << 12) - 1) as usize;
-//         let mut ret = ((self.words[1] >> 48) & mask) << 0;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pd_mapped_asid(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 12) - 1) as usize;
-//         self.words[1] &= !(mask << 48);
-//         self.words[1] |= (((new_field >> 0) & mask) << 48);
-//     }
-//     #[inline]
-//     pub fn get_pd_base_ptr(&self) -> usize {
-//         let mask = ((1u128 << 48) - 1) as usize;
-//         let mut ret = ((self.words[1] >> 0) & mask) << 0;
-//         if true && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pd_base_ptr(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 48) - 1) as usize;
-//         self.words[1] &= !(mask << 0);
-//         self.words[1] |= (((new_field >> 0) & mask) << 0);
-//     }
-//     #[inline]
-//     pub fn new_pdpt_cap(
-//         capPDPTIsMapped: usize,
-//         capPDPTMappedAddress: usize,
-//         capPDPTMappedASID: usize,
-//         capPDPTBasePtr: usize,
-//     ) -> Self {
-//         let mut value = cap_t::default();
-//         value.words[0] =
-//             0 | (capPDPTIsMapped & 0x1) << 58 | (capPDPTMappedAddress & 0xffc000000000) << 10;
-//         value.words[1] =
-//             0 | (capPDPTMappedASID & 0xfff) << 48 | (capPDPTBasePtr & 0xffffffffffff) >> 0;
-//         value.words[0] |= ((CapTag::PDPT as usize & ((1usize << 5) - 1)) << 59);
-//         value
-//     }
-//     #[inline]
-//     pub fn get_pdpt_is_mapped(&self) -> usize {
-//         let mask = ((1u128 << 1) - 1) as usize;
-//         let mut ret = ((self.words[0] >> 58) & mask) << 0;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pdpt_is_mapped(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 1) - 1) as usize;
-//         self.words[0] &= !(mask << 58);
-//         self.words[0] |= (((new_field >> 0) & mask) << 58);
-//     }
-//     #[inline]
-//     pub fn get_pdpt_mapped_address(&self) -> usize {
-//         let mut ret = (self.words[0] & 0x3ff000000000000) >> 10;
-//         if true && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pdpt_mapped_address(&mut self, new_field: usize) {
-//         self.words[0] &= !0x3ff000000000000;
-//         self.words[0] |= (new_field << 10) & 0x3ff000000000000;
-//     }
-//     #[inline]
-//     pub fn get_pdpt_mapped_asid(&self) -> usize {
-//         let mask = ((1u128 << 12) - 1) as usize;
-//         let mut ret = ((self.words[1] >> 48) & mask) << 0;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pdpt_mapped_asid(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 12) - 1) as usize;
-//         self.words[1] &= !(mask << 48);
-//         self.words[1] |= (((new_field >> 0) & mask) << 48);
-//     }
-//     #[inline]
-//     pub fn get_pdpt_base_ptr(&self) -> usize {
-//         let mask = ((1u128 << 48) - 1) as usize;
-//         let mut ret = ((self.words[1] >> 0) & mask) << 0;
-//         if true && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pdpt_base_ptr(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 48) - 1) as usize;
-//         self.words[1] &= !(mask << 0);
-//         self.words[1] |= (((new_field >> 0) & mask) << 0);
-//     }
-//     #[inline]
-//     pub fn new_pml4_cap(
-//         capPML4MappedASID: usize,
-//         capPML4IsMapped: usize,
-//         capPML4BasePtr: usize,
-//     ) -> Self {
-//         let mut value = cap_t::default();
-//         value.words[0] = 0 | (capPML4MappedASID & 0xfff) << 0 | (capPML4IsMapped & 0x1) << 58;
-//         value.words[1] = 0 | capPML4BasePtr << 0;
-//         value.words[0] |= ((CapTag::PML4 as usize & ((1usize << 5) - 1)) << 59);
-//         value
-//     }
-//     #[inline]
-//     pub fn get_pml4_mapped_asid(&self) -> usize {
-//         let mask = ((1u128 << 12) - 1) as usize;
-//         let mut ret = ((self.words[0] >> 0) & mask) << 0;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pml4_mapped_asid(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 12) - 1) as usize;
-//         self.words[0] &= !(mask << 0);
-//         self.words[0] |= (((new_field >> 0) & mask) << 0);
-//     }
-//     #[inline]
-//     pub fn get_pml4_is_mapped(&self) -> usize {
-//         let mask = ((1u128 << 1) - 1) as usize;
-//         let mut ret = ((self.words[0] >> 58) & mask) << 0;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pml4_is_mapped(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 1) - 1) as usize;
-//         self.words[0] &= !(mask << 58);
-//         self.words[0] |= (((new_field >> 0) & mask) << 58);
-//     }
-//     #[inline]
-//     pub fn get_pml4_base_ptr(&self) -> usize {
-//         let mask = ((1u128 << 64) - 1) as usize;
-//         let mut ret = ((self.words[1] >> 0) & mask) << 0;
-//         if false && (ret & (1usize << 47)) != 0 {
-//             ret |= 0xffff000000000000;
-//         }
-//         ret
-//     }
-//     #[inline]
-//     pub fn set_pml4_base_ptr(&mut self, new_field: usize) {
-//         let mask = ((1u128 << 64) - 1) as usize;
-//         self.words[1] &= !(mask << 0);
-//         self.words[1] |= (((new_field >> 0) & mask) << 0);
-//     }
-// }
 //
 // pub fn same_region_as(cap1: &cap_t, cap2: &cap_t) -> bool {
 //     match cap1.get_cap_type() {
@@ -642,6 +362,42 @@ mod test {
 //         }
 //     }
 // }
+
+
+mod test {
+    use ktest::ktest;
+
+    use crate::cspace::raw::{CapType, RawCap};
+
+    #[ktest]
+    fn cap_size_test() {
+        assert_eq!(core::mem::size_of::<RawCap>(), 16);
+    }
+
+    #[ktest]
+    fn null_cap_test() {
+        let cap = RawCap::new_null_cap();
+        assert_eq!(cap.raw_typ(), CapType::Null as usize);
+    }
+
+    #[ktest]
+    fn cnode_cap_test() {
+        let ptr = 0xffff_8000_0412_ea90;
+        let radix = 2;
+        let guard_size = 3;
+        let guard = 4;
+        let cnode_cap = RawCap::new_cnode_cap(ptr, radix, guard_size, guard);
+        assert_eq!((ptr >> 1 << 1), cnode_cap.cnode_ptr());
+        assert_eq!(radix, cnode_cap.cnode_radix());
+        assert_eq!(guard_size, cnode_cap.cnode_guard_size());
+        assert_eq!(guard, cnode_cap.cnode_guard());
+        assert_eq!(cnode_cap.raw_typ(), CapType::CNode as usize);
+    }
+
+    #[ktest]
+    fn untyped_cap_test() {}
+}
+
 //
 // /// 判断两个cap指向的内核对象是否是同一个内存区域
 // pub fn same_object_as(cap1: &cap_t, cap2: &cap_t) -> bool {

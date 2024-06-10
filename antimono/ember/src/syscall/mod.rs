@@ -4,8 +4,7 @@ use crate::EmberResult;
 use crate::error::{EmberError, Sel4Errno};
 use crate::sel4::SeL4ABI;
 use crate::sel4::sys::syscall_id::*;
-use crate::syscall::sel4_syscalls::{sel4_kernel_putchar, sel4_set_tls_base};
-use crate::syscall::unknown_syscall::DebugPutChar;
+use crate::syscall::sel4_syscalls::{sel4_call, sel4_kernel_putchar, sel4_set_tls_base};
 
 pub mod sel4_syscalls;
 // pub mod utils;
@@ -17,11 +16,6 @@ pub mod sel4_syscalls;
 // use crate::common::fault::{FaultType, lookup_fault_t, seL4_Fault_t};
 // use crate::common::sel4_config::tcbCaller;
 
-
-// TODO remove this figure out why no this syscall
-pub mod unknown_syscall {
-    pub const DebugPutChar: i32 = -9i32;
-}
 
 // pub const SysCall: isize = -1;
 // pub const SysReplyRecv: isize = -2;
@@ -334,6 +328,7 @@ pub fn syscall_dispatch(
     context: &mut UserContext,
 ) -> EmberResult<SyscallReturn> {
     match syscall_number {
+        Call => syscall_handler!(0,sel4_call,context),
         SetTLSBase => syscall_handler!(0,sel4_set_tls_base,context),
         DebugPutChar => syscall_handler!(0,sel4_kernel_putchar,context),
         // SEL4_SYS_DEBUG_HALT => syscall_handler!(0, sel4_sys_debug_halt),

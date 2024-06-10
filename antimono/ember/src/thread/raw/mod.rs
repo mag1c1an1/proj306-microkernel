@@ -21,7 +21,7 @@ use crate::sel4::register::{CS, FLAGS, NUM_CONTEXT_REGISTERS, SS};
 /// tcb_t in sel4
 /// TODO ref
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Default,Debug, Clone)]
 pub struct RawTcb {
     pub arch_raw_tcb: ArchRawTcb,
     pub thread_state: [usize; 3],
@@ -49,9 +49,19 @@ pub struct DebugRawTcb {
     pub name: [u8; 848],
 }
 
+impl Default for DebugRawTcb {
+    fn default() -> Self {
+       Self {
+           next: 0,
+           prev: 0,
+           name: [0;848],
+       }
+    }
+}
+
 
 #[repr(C)]
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct ArchRawTcb {
     pub arch_user_context: ArchUserContext,
 }

@@ -7,8 +7,8 @@ use aster_frame::{
 use crate::{EmberResult, log_syscall_entry};
 use crate::sel4::SeL4ABI;
 use crate::sel4::sys::syscall_id::*;
+use crate::syscall::sel4_syscalls::invocation::handle_invocation;
 use crate::syscall::SyscallReturn;
-use crate::syscall::unknown_syscall::DebugPutChar;
 
 pub mod invocation;
 
@@ -28,6 +28,7 @@ pub fn sel4_kernel_putchar(user_context: &mut UserContext) -> EmberResult<Syscal
     early_print!("{}", c);
     Ok(SyscallReturn::Return(0))
 }
+
 //
 // /// use this to debug a syscall
 // pub fn sel4_sys_debug_halt() -> Result<SyscallReturn> {
@@ -45,11 +46,21 @@ pub fn sel4_kernel_putchar(user_context: &mut UserContext) -> EmberResult<Syscal
 //
 // pub fn sel4_debug_name_thread() {}
 //
-// pub fn sel4_send() {}
-// pub fn sel4_nb_send() {}
-// pub fn sel4_call() {}
-// pub fn sel4_recv() {}
-// pub fn sel4_reply() {}
-// pub fn sel4_reply_recv() {}
-// pub fn sel4_nb_recv() {}
-// pub fn sel4_yield() {}
+pub fn sel4_send(user_context: &mut UserContext) {}
+
+pub fn sel4_nb_send() {}
+
+pub fn sel4_call(user_context: &mut UserContext) -> EmberResult<SyscallReturn> {
+    handle_invocation(true, true, user_context)?;
+    Ok(SyscallReturn::Return(0))
+}
+
+pub fn sel4_recv(user_context: &mut UserContext) {}
+
+pub fn sel4_reply() {}
+
+pub fn sel4_reply_recv() {}
+
+pub fn sel4_nb_recv() {}
+
+pub fn sel4_yield() {}
